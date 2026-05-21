@@ -34,7 +34,7 @@ Verify tốn token. Skip = save token = ăn xu hướng "be efficient".
 
 Nếu prompt không ép verify → agent assume self-judgment đủ. Không đủ.
 
-## Verification Gate Pattern
+## Pattern Verification Gate
 
 Gate = checkpoint **bắt buộc** trước khi agent được phép nói "done".
 

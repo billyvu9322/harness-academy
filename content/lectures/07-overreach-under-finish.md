@@ -38,7 +38,7 @@ Model train trên code "clean". Khi thấy code không sạch, instinct = sửa.
 
 Tokens cost time. Model có bias tiết kiệm — claim done sớm. Đặc biệt khi prompt không có verify gate.
 
-## Counter-measure: Scope Lock
+## Đối sách: Khoá phạm vi (Scope Lock)
 
 ### 1. Prompt scope rõ
 
@@ -76,7 +76,7 @@ Feature list:
 
 Code phải match đúng list. Vượt → cờ đỏ.
 
-## Counter-measure: Finish Gate
+## Đối sách: Finish Gate (cổng hoàn thành)
 
 ### 1. Verification skill (bắt buộc)
 

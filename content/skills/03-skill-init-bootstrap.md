@@ -10,7 +10,7 @@ tags: [skill, init, lifecycle]
 
 Lecture 06 đã nói: skip init = bug. Skill này automate init.
 
-## Full template
+## Template đầy đủ
 
 `.claude/skills/init-session/SKILL.md`:
 

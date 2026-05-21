@@ -23,7 +23,7 @@ Task lớn (refactor module, build feature dài) chạy > 1 session hoặc > và
 - Agent đề xuất approach đã loại bỏ
 - Agent claim "starting fresh" giữa task dài
 
-## Giải pháp: External State
+## Giải pháp: Lưu state bên ngoài
 
 State **không** nằm trong chat. State nằm trong:
 
@@ -97,7 +97,7 @@ Claude: [reads plan file] Đang ở Phase 1, bước "test rate limit".
         Tiếp tục từ đây?
 ```
 
-## Checkpoint Pattern
+## Pattern Checkpoint
 
 Mọi 30-60 phút work, agent (hoặc bạn ép) chạy:
 

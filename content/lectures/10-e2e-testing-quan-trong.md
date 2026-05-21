@@ -59,7 +59,7 @@ Verification (theo order):
 
 Bước 4 fail = chưa done, dù 1-3 pass.
 
-## Tooling: Playwright MCP
+## Công cụ: Playwright MCP
 
 Claude Code support MCP. Playwright MCP cho agent **điều khiển browser**:
 
@@ -91,7 +91,7 @@ Agent: I've checked the code and it looks correct.
 
 Code "look correct" ≠ run correct. Bắt buộc execute.
 
-## Hybrid stack đề xuất
+## Stack kết hợp đề xuất
 
 | Layer | Tool | Khi nào |
 |-------|------|---------|

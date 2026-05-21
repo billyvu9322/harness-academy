@@ -29,7 +29,7 @@ tags: [tool, mcp]
 - [Continue](https://www.continue.dev/) — open-source AI code assistant
 - [Cline](https://github.com/cline/cline) — autonomous coding agent VSCode
 
-## Build MCP server
+## Tự xây MCP server
 
 - [MCP SDK TypeScript](https://github.com/modelcontextprotocol/typescript-sdk)
 - [MCP SDK Python](https://github.com/modelcontextprotocol/python-sdk)

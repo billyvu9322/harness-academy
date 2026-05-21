@@ -28,8 +28,8 @@ tags: [article, research]
 - [r/ClaudeAI](https://www.reddit.com/r/ClaudeAI/) — community discussion
 - [r/LocalLLaMA](https://www.reddit.com/r/LocalLLaMA/) — local model + agent
 
-## Paper
+## Bài báo nghiên cứu
 
-- [ReAct: Synergizing Reasoning and Acting](https://arxiv.org/abs/2210.03629) — foundational pattern
-- [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) — self-improving agent
-- [Toolformer](https://arxiv.org/abs/2302.04761) — tool use foundation
+- [ReAct: Synergizing Reasoning and Acting](https://arxiv.org/abs/2210.03629) — pattern nền tảng kết hợp suy luận và hành động
+- [Reflexion: Language Agents with Verbal Reinforcement Learning](https://arxiv.org/abs/2303.11366) — agent tự cải thiện qua phản hồi ngôn ngữ
+- [Toolformer](https://arxiv.org/abs/2302.04761) — nền tảng cho khả năng sử dụng tool của LLM

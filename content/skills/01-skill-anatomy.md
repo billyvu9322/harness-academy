@@ -10,7 +10,7 @@ tags: [skill, anatomy]
 
 Có thể tìm kiếm các skills trên [Skills Marketplace](https://skillsmp.com/) — thư viện public, nhiều skill hay.
 
-## Anatomy 1 skill
+## Cấu trúc một Skill
 
 ```
 .claude/skills/your-skill/
@@ -24,7 +24,7 @@ Có thể tìm kiếm các skills trên [Skills Marketplace](https://skillsmp.co
     └── boilerplate.ts
 ```
 
-## SKILL.md format
+## Định dạng SKILL.md
 
 ```markdown
 ---
@@ -49,7 +49,7 @@ Body Markdown free-form. Có thể:
 ...
 ```
 
-## Frontmatter rules
+## Quy tắc Frontmatter
 
 | Field | Required | Mục đích |
 |-------|----------|----------|
@@ -79,7 +79,7 @@ description: |
 
 → Trigger condition rõ + keyword cụ thể.
 
-## Body structure
+## Cấu trúc phần Body
 
 Body free-form nhưng nên có:
 

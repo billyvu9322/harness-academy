@@ -31,7 +31,7 @@ Có thể tìm kiếm sub-agent template trên [Awesome Claude Code Subagents](h
 
 Mỗi file = 1 agent type. Orchestrator gọi bằng `subagent_type`.
 
-## Template file
+## File template mẫu
 
 `.claude/agents/researcher.md`:
 
@@ -180,17 +180,17 @@ Sai: `description: A helpful agent`
 
 → Set tối thiểu cho orchestrator pattern.
 
-## Context budget
+## Ngân sách context
 
-Mỗi sub-agent chạy session riêng. Orchestrator chỉ thấy output. Quy tắc:
+Mỗi sub-agent chạy session riêng. Orchestrator chỉ nhận output cuối. Quy tắc:
 
-- **Input** từ orchestrator: ≤ 500 token (objective + context)
-- **Output** từ sub-agent: ≤ 1000 token (summary structured)
-- Sub-agent intra-context: 10k-50k token tuỳ task
+- **Input** từ orchestrator → sub-agent: ≤ 500 token (mục tiêu + context)
+- **Output** từ sub-agent → orchestrator: ≤ 1000 token (summary có cấu trúc)
+- Context nội bộ của sub-agent: 10k-50k token tuỳ task
 
-→ Orchestrator giữ context lean dù sub-agent đọc nhiều.
+→ Orchestrator giữ context gọn dù sub-agent đọc nhiều file.
 
-## Test sub-agent
+## Kiểm thử sub-agent
 
 Tạo xong, test bằng 1 task mẫu:
 

@@ -106,9 +106,9 @@ export function HomePage() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-2xl font-bold mb-2">3 tool AI dev cần biết</h2>
+        <h2 className="text-2xl font-bold mb-2">3 tool AI nên biết</h2>
         <p className="text-slate-600 dark:text-slate-400 mb-8">
-          Khác bề mặt — chung triết lý "harness around LLM".
+          Khác bề mặt — chung triết lý "harness bao quanh LLM".
         </p>
         <div className="grid md:grid-cols-3 gap-5">
           {tools.map((t) => (
@@ -135,7 +135,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 className="text-2xl font-bold mb-2">5 trụ của một Harness</h2>
           <p className="text-slate-600 dark:text-slate-400 mb-8">
-            Master 5 cái này = Harness Engineer thực thụ.
+            Master 5 trụ này = Harness Engineer thực thụ.
           </p>
           <div className="grid md:grid-cols-5 gap-4">
             {pillars.map((p, i) => (

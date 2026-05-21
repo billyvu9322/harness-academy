@@ -53,7 +53,7 @@ Hook chạy gì, exit code, output.
 
 Stack trace đầy đủ, không paraphrase.
 
-## Implement: Hook log
+## Triển khai: Hook ghi log
 
 Claude Code `.claude/settings.json`:
 
@@ -77,7 +77,7 @@ Claude Code `.claude/settings.json`:
 
 → Mọi tool call ghi log. Sau session, đọc log = trace.
 
-## Implement: Transcript dump
+## Triển khai: Xuất transcript
 
 Claude Code lưu transcript JSON ở `~/.claude/projects/<encoded>/`. 
 
@@ -86,7 +86,7 @@ Pattern:
 - Mỗi PR attach session log
 - Postmortem: đọc log để hiểu chỗ agent fail
 
-## Telemetry skill
+## Skill báo cáo telemetry
 
 ```yaml
 ---
@@ -102,7 +102,7 @@ description: Use after long session to summarize tool usage, token spend, failur
 
 → Bạn dashboard hoá session.
 
-## Anti-pattern: Silent error
+## Anti-pattern: Lỗi im lặng
 
 Sai:
 ```
@@ -120,7 +120,7 @@ Agent: Tool X failed with: "ENOENT no such file"
 
 Verbose hơn — nhưng debuggable.
 
-## Metrics đáng track
+## Metric đáng theo dõi
 
 - **Cost**: token / session
 - **Success rate**: feature done / feature started
@@ -130,14 +130,14 @@ Verbose hơn — nhưng debuggable.
 
 → Improve harness dựa trên số, không cảm tính.
 
-## Production observability
+## Observability cho môi trường production
 
-Khi agent chạy auto (CI, background job):
-- Push log lên storage (S3, Loki)
-- Alert khi error rate spike
+Khi agent chạy tự động (CI, background job):
+- Đẩy log lên storage (S3, Loki)
+- Alert khi error rate tăng đột biến
 - Dashboard (Grafana) cho metric
 
-→ Treat agent như service production.
+→ Đối xử với agent như một service production.
 
 ## Điểm chính
 

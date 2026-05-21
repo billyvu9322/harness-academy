@@ -14,7 +14,7 @@ Skill này:
 - Yêu cầu paste output làm evidence
 - Block claim nếu fail
 
-## Full template
+## Template đầy đủ
 
 `.claude/skills/verification-before-completion/SKILL.md`:
 
@@ -95,7 +95,7 @@ User please confirm manually: <what to check>."
 DO NOT claim done.
 ```
 
-## Cách wire vô project
+## Cách tích hợp vào project
 
 ### 1. Tạo file
 
@@ -138,7 +138,7 @@ Before claiming any task done:
 
 → Hook block commit/PR nếu test fail.
 
-## Variant cho dự án khác
+## Biến thể cho ngôn ngữ khác
 
 ### Python
 

@@ -12,7 +12,7 @@ tags: [skill, cleanup, lifecycle]
 - Confirm với user trước destructive cleanup
 - Đảm bảo session sau load lên state predictable
 
-## Full template
+## Template đầy đủ
 
 `.claude/skills/session-cleanup/SKILL.md`:
 
@@ -117,14 +117,14 @@ Next session: see <plan file> step <N>.
 
 → Hook in ra state cuối session để bạn (và session sau) thấy.
 
-## Worktree alternative
+## Phương án thay thế: Worktree
 
-Nếu dùng worktree mỗi task:
+Nếu dùng worktree cho mỗi task:
 - `ExitWorktree` tự cleanup worktree
-- Main workspace không cần cleanup riêng
-- Branch auto-prune nếu config
+- Workspace chính không cần cleanup riêng
+- Branch tự prune nếu có config
 
-→ Worktree giải quyết phần lớn cleanup.
+→ Worktree xử lý phần lớn công đoạn cleanup.
 
 ## Tiếp theo
 

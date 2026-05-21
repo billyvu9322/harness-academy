@@ -79,7 +79,7 @@ Sau init, agent có thể trả lời: "Tôi sẽ làm X, Y, Z. Không đụng A
 4. Confirm scope with user if task >= 3 files affected
 ```
 
-### Init Skill
+### Skill Init
 
 ```yaml
 ---
@@ -94,7 +94,7 @@ description: Run at start of any non-trivial coding task. Loads project context 
 6. Summarize plan to user, await confirm
 ```
 
-## Scope confirmation pattern
+## Pattern xác nhận phạm vi (scope)
 
 Sau init, agent **phải** confirm:
 

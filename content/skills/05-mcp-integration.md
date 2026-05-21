@@ -132,23 +132,23 @@ await server.connect(new StdioServerTransport())
 
 → Đóng gói + register vô `.claude/settings.json`.
 
-## Best practice
+## Thực hành tốt
 
-1. **Tool ngắn gọn, focused** — 1 tool 1 action
-2. **Input schema chặt** — Zod hoặc JSON Schema validate
-3. **Output structured** — JSON, không free-text
-4. **Error explicit** — return error object, không throw silently
-5. **Idempotent** nếu được
-6. **Authentication** qua env var, không hardcode
+1. **Tool ngắn gọn, tập trung** — 1 tool đảm nhận 1 hành động
+2. **Schema input chặt** — validate bằng Zod hoặc JSON Schema
+3. **Output có cấu trúc** — JSON, tránh free-text
+4. **Lỗi tường minh** — trả về error object, không throw silently
+5. **Idempotent** khi có thể
+6. **Xác thực qua env var**, không hardcode credential
 
-## Security note
+## Lưu ý bảo mật
 
-MCP server chạy local trên máy agent. Tool có thể destructive:
-- DB write → permission gate ở agent level
-- Filesystem → scope chặt
+MCP server chạy local trên máy agent. Một số tool có khả năng destructive:
+- Ghi DB → gate permission ở tầng agent
+- Filesystem → giới hạn scope chặt
 - Network → allowlist domain
 
-Treat MCP server như supply chain code — review trước khi cài.
+Đối xử với MCP server như supply chain code — review kỹ trước khi cài.
 
 ## Tổng kết
 

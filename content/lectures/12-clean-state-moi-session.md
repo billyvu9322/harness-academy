@@ -58,7 +58,7 @@ Không còn:
 
 Plan file đã update đúng status. Todo đã complete hoặc note rõ blocker.
 
-## Implement: SessionEnd hook
+## Triển khai: SessionEnd hook
 
 Claude Code:
 
@@ -81,7 +81,7 @@ Claude Code:
 
 → Cuối session, hook nhắc nhở.
 
-## Cleanup Skill
+## Skill dọn dẹp session
 
 ```yaml
 ---
@@ -98,7 +98,7 @@ description: Run before ending session. Verifies clean git state, no tmp files, 
 8. Output: "Session ended cleanly" + summary
 ```
 
-## Edge case: Long-running task
+## Tình huống đặc biệt: Task dài hạn
 
 Task chưa xong nhưng phải end session:
 - KHÔNG cleanup pending work
@@ -108,7 +108,7 @@ Task chưa xong nhưng phải end session:
 
 → "Clean" = state có ý thức, không phải "xoá hết".
 
-## Anti-pattern: Yolo cleanup
+## Anti-pattern: Cleanup bừa bãi
 
 Sai:
 ```bash
@@ -124,16 +124,16 @@ git branch -D feature/test-x
 - Confirm từng cái: keep / discard / stash
 - Branch chưa merge → hỏi user
 
-## Worktree pattern
+## Pattern Worktree
 
-Cho task isolation cao:
+Khi cần cô lập task triệt để:
 - Mỗi task = 1 worktree riêng
-- Done → exit worktree → auto cleanup
-- Không lo polluting main workspace
+- Hoàn thành → exit worktree → auto cleanup
+- Không lo ảnh hưởng workspace chính
 
-Claude Code có `EnterWorktree` / `ExitWorktree` tool.
+Claude Code có tool `EnterWorktree` / `ExitWorktree`.
 
-## Postmortem rule
+## Quy tắc xử lý sự cố (Postmortem)
 
 Khi session crash:
 - Đầu session sau, init skill kiểm git state
