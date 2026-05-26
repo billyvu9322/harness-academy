@@ -161,7 +161,7 @@ export function HomePage() {
           <PathCard
             title="Lectures"
             badge="Nền tảng"
-            desc="13 bài giảng — vì sao agent fail và cách harness fix nó."
+            desc="16 bài giảng — vì sao agent fail và cách harness fix nó."
             to="/lectures"
             count={lectures.length}
           />

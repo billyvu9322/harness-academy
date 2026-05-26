@@ -1,6 +1,6 @@
 ---
 title: "Project 01 — Test Automation Workflow với Playwright MCP"
-description: "Build agent workflow tự sinh + chạy E2E test bằng browser thật. Áp dụng đầy đủ 12 lecture + 5 skill."
+description: "Build agent workflow tự sinh + chạy E2E test bằng browser thật. Áp dụng đầy đủ các lectures + skills."
 order: 1
 duration: "60-90 phút thực hành"
 tags: [project, e2e, playwright, mcp]

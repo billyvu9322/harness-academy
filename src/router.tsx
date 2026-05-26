@@ -32,7 +32,7 @@ const lecturesIndex = createRoute({
   component: () => (
     <IndexPage
       title="Lectures — Bài giảng nền tảng"
-      subtitle="13 bài học vì sao AI agent fail và cách harness fix nó."
+      subtitle="16 bài học vì sao AI agent fail và cách harness fix nó."
       items={lectures}
       basePath="/lectures"
     />

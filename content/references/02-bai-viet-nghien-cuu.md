@@ -12,21 +12,11 @@ tags: [article, research]
 - [Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) — patterns chính: workflow vs agent
 - [How we built Claude Code](https://www.anthropic.com/news/claude-code) — case study harness
 
-## OpenAI
+## AgentWay — Harness Books
 
-- [Introducing the Codex CLI](https://openai.com/index/introducing-codex/) — release post
-- [Cookbook — Agents guide](https://cookbook.openai.com/topic/agents) — pattern reference
-
-## Independent / Walking Labs
-
-- [Learn Harness Engineering](https://walkinglabs.github.io/learn-harness-engineering/en/) — nguồn gốc khoá này
-- [Effective harnesses for long-running agents](https://walkinglabs.substack.com/) — bài gốc
-
-## Cộng đồng
-
-- [Awesome Claude Code](https://github.com/hesreallyhim/awesome-claude-code) — curated list
-- [r/ClaudeAI](https://www.reddit.com/r/ClaudeAI/) — community discussion
-- [r/LocalLLaMA](https://www.reddit.com/r/LocalLLaMA/) — local model + agent
+- [Learn Harness Engineering](https://walkinglabs.github.io/learn-harness-engineering/en/) — học cách làm chủ harness engineering.
+- [Harness Engineering: A Design Guide to Claude Code](https://harness-books.agentway.dev/en/book1-claude-code/) — phân tích source Claude Code, rút design philosophy. 9 chapter + 3 appendix
+- [The Harness Design Philosophies of Claude Code and Codex](https://harness-books.agentway.dev/en/book2-comparing/) — Triết lý thiết kế khung quản lý (harness) của Claude Code và Codex
 
 ## Bài báo nghiên cứu
 
