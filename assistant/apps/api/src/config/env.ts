@@ -1,10 +1,15 @@
+import { resolve } from 'node:path';
 import { z } from 'zod';
 
 const envSchema = z.object({
-  OPENAI_API_KEY: z.string().optional().default(''),
+  // Repo root that holds the indexable docs. Defaults to 3 levels up from apps/api.
+  DOCS_ROOT: z.string().min(1).default(resolve(process.cwd(), '..', '..', '..')),
+  // LLM router (OpenAI-compatible). Key loaded from .env only — never committed.
+  LLM_BASE_URL: z.string().url().default('https://9router.nimo.io.vn/v1'),
+  LLM_API_KEY: z.string().min(1),
   DATABASE_URL: z.string().min(1).default('postgres://postgres:postgres@localhost:5432/harness_assistant'),
   OPENAI_EMBEDDING_MODEL: z.string().min(1).default('text-embedding-3-small'),
-  OPENAI_CHAT_MODEL: z.string().min(1).default('gpt-5.5-mini'),
+  OPENAI_CHAT_MODEL: z.string().min(1).default('cx/gpt-5.5'),
   PORT: z.coerce.number().default(3001),
   WEB_ORIGIN: z.string().url().default('http://localhost:5174'),
 });

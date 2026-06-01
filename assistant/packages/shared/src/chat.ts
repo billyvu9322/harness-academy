@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { citationSchema } from './citations';
+import { suggestionSchema } from './suggestions';
 
 export const chatModeSchema = z.enum(['academy', 'harness-design']);
 
@@ -14,6 +16,16 @@ export const conversationSummarySchema = z.object({
   updatedAt: z.string(),
 });
 
+export const chatMessageSchema = z.object({
+  id: z.string(),
+  role: z.enum(['user', 'assistant']),
+  content: z.string(),
+  citations: z.array(citationSchema).default([]),
+  suggestions: z.array(suggestionSchema).default([]),
+  createdAt: z.string(),
+});
+
 export type ChatMode = z.infer<typeof chatModeSchema>;
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
 export type ConversationSummary = z.infer<typeof conversationSummarySchema>;
+export type ChatMessage = z.infer<typeof chatMessageSchema>;

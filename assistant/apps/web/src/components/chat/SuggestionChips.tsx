@@ -11,11 +11,18 @@ export function SuggestionChips({ suggestions, onSelect }: SuggestionChipsProps)
   }
 
   return (
-    <section className="panel">
-      <h2>Suggested next prompts</h2>
-      <div className="chips">
+    <section className="w-full">
+      <div className="text-[12px] font-bold uppercase tracking-[0.08em] text-forge-label mb-3">
+        Next prompts:
+      </div>
+      <div className="flex gap-3 flex-wrap">
         {suggestions.map((suggestion) => (
-          <button key={suggestion.label} type="button" onClick={() => onSelect(suggestion.prompt)}>
+          <button
+            key={suggestion.label}
+            type="button"
+            onClick={() => onSelect(suggestion.prompt)}
+            className="flex items-center gap-2 px-4 py-2 bg-surface-container border border-outline-variant text-on-surface-variant text-[13px] font-medium rounded-lg whitespace-nowrap hover:bg-surface-container-high hover:text-forge-orange transition-colors"
+          >
             {suggestion.label}
           </button>
         ))}

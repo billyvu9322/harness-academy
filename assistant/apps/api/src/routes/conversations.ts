@@ -1,17 +1,30 @@
 import type { FastifyPluginAsync } from 'fastify';
+import { conversationExists, getMessages, listConversations } from '../db/repo';
 
 export const conversationsRoute: FastifyPluginAsync = async (app) => {
   app.get('/api/conversations', async (_request, reply) => {
-    return reply.code(501).send({
-      status: 'not_implemented',
-      summary: 'Conversation API scaffold exists but persistence is not implemented yet.',
-    });
+    return reply.send({ conversations: await listConversations() });
   });
 
-  app.get('/api/conversations/:conversationId', async (_request, reply) => {
-    return reply.code(501).send({
-      status: 'not_implemented',
-      summary: 'Conversation detail scaffold exists but persistence is not implemented yet.',
-    });
-  });
+  app.get<{ Params: { conversationId: string } }>(
+    '/api/conversations/:conversationId/messages',
+    async (request, reply) => {
+      const { conversationId } = request.params;
+      if (!(await conversationExists(conversationId))) {
+        return reply.code(404).send({ error: 'not_found' });
+      }
+      return reply.send({ conversationId, messages: await getMessages(conversationId) });
+    },
+  );
+
+  app.get<{ Params: { conversationId: string } }>(
+    '/api/conversations/:conversationId',
+    async (request, reply) => {
+      const { conversationId } = request.params;
+      if (!(await conversationExists(conversationId))) {
+        return reply.code(404).send({ error: 'not_found' });
+      }
+      return reply.send({ conversationId, messages: await getMessages(conversationId) });
+    },
+  );
 };

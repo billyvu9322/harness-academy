@@ -1,0 +1,27 @@
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: auto_awesome
+      - text: Assistant
+    - generic [ref=e7]:
+      - button "Open in new window" [ref=e8] [cursor=pointer]: open_in_new
+      - button "History" [ref=e9] [cursor=pointer]: history
+      - button "Close" [ref=e10] [cursor=pointer]: close
+  - generic [ref=e12]:
+    - img [ref=e15]
+    - generic [ref=e18]:
+      - textbox "What would you like to know?" [ref=e19]
+      - button "Send" [disabled] [ref=e20]:
+        - generic [ref=e21]: arrow_right_alt
+    - generic [ref=e22]:
+      - generic [ref=e23]: "Examples:"
+      - generic [ref=e24]:
+        - button "AGENTS.md" [ref=e25] [cursor=pointer]
+        - button "State Mgmt" [ref=e26] [cursor=pointer]
+        - button "Verification" [ref=e27] [cursor=pointer]
+        - button "Init Phase" [ref=e28] [cursor=pointer]
+      - generic [ref=e29]:
+        - paragraph [ref=e30] [cursor=pointer]: What is a harness and why does it matter for AI agents?
+        - paragraph [ref=e31] [cursor=pointer]: How do I design init.sh for multi-session continuity?
+        - paragraph [ref=e32] [cursor=pointer]: What's the difference between feature_list.json and AGENTS.md?
+  - paragraph [ref=e34]: Forge Terminal Environment v1.4.2 — Encrypted AI Core Active

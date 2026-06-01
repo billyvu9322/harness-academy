@@ -2,9 +2,351 @@
 
 Date: 2026-05-31
 
-Status: draft for user review
+Status: draft for user review (UI theme updated 2026-06-01 — switched to Light Theme welcome view)
 
 Target implementation folder: `assistant/`
+
+## UI Theme & Welcome View (Light)
+
+Design source: Stitch project `1011803010040175047`, screen `Assistant - Welcome View (Light Theme, No Sidebar)` (`5346aec202504d81b3774192bbba0c38`). Companion screen: `Assistant - Chat View (Light Theme)` (`645290fa991d4adba42b68d1ffa1d6e9`). Phase-1 default theme switches from the original dark Forge Terminal palette to a **light** surface system. Background tokens, fonts, and layout below are normative for `apps/web/`.
+
+### Color Tokens (Tailwind extend.colors)
+
+```ts
+background: '#f8f9fa'                 // page canvas
+surface: '#f8f9fa'
+surface-bright: '#f8f9fa'
+surface-dim: '#d9dadb'
+surface-container-lowest: '#ffffff'   // input panel, top app bar, footer
+surface-container-low: '#f3f4f5'
+surface-container: '#edeeef'          // inactive example chips
+surface-container-high: '#e7e8e9'     // chip hover
+surface-container-highest: '#e1e3e4'
+
+on-background: '#191c1d'
+on-surface: '#191c1d'
+on-surface-variant: '#58423d'
+text-muted: '#616566'                 // footer status / secondary labels
+forge-text: '#434748'                 // example question body
+forge-label: '#58423d'                // section eyebrow ("Examples:")
+
+outline: '#8b716b'                    // textarea placeholder
+outline-variant: '#dfc0b9'            // panel borders, header/footer dividers
+forge-border: '#dfc0b9'
+
+primary: '#a4361f'
+primary-container: '#c54e34'
+forge-orange: '#D95C41'               // brand accent, active chip, send button, focus ring
+on-primary: '#ffffff'
+
+error: '#ba1a1a'
+```
+
+`html.light` is the default class. Dark theme is **not** in phase 1 scope; the prior `#131313` Forge Terminal palette is parked for a later switcher.
+
+### Typography
+
+- `Manrope` — display, headline, title, label-caps (700/800 weights for hero/eyebrows).
+- `Inter` — body-lg (18px/28), body-md (16px/24), placeholders.
+- `JetBrains Mono` — `label-sm` (12px, +0.05em tracking) for the footer status strip.
+- Type scale: `display-lg 48/56`, `headline-lg 32/40`, `title-md 20/28`, `body-lg 18/28`, `body-md 16/24`, `label-caps 12/1 +0.05em`, `label-sm 12/16 +0.05em`.
+
+### Shape & Spacing
+
+- Radius: `lg = 0.5rem` (chips, buttons), `xl = 0.75rem` (input panel card), `full` (pill icon buttons).
+- Spacing scale: `xs 4`, `base 8`, `sm 12`, `gutter 24`, `md 24`, `lg 48`, `xl 80`, `panel-padding 20`, `margin-desktop 64`, `margin-mobile 16`.
+- Welcome content max width: `max-w-2xl` (672px), vertically and horizontally centered.
+
+### Layout — Welcome View (No Sidebar)
+
+Single-column embedded panel, **no left sidebar in phase 1**. Three vertical zones:
+
+1. **TopAppBar** — `h-14`, `bg-surface-container-lowest`, bottom border `outline-variant`. Left: filled `auto_awesome` sparkle in `forge-orange` + label `ASSISTANT` (label-caps). Right: icon row `open_in_new`, `history`, `close`.
+2. **Centered Canvas** — `flex-1 flex flex-col items-center justify-center`, padding `gutter`. Stack inside `max-w-2xl`:
+   - 64px sparkle SVG hero mark (`#D95C41`).
+   - Input panel: `bg-surface-container-lowest`, 1px `outline-variant`, `rounded-xl`, `p-5`, `shadow-sm`, focus state swaps border + `ring-1` to `forge-orange`. Textarea `min-h-[160px]`, placeholder `"What would you like to know?"` in `outline` color. Send button: floating bottom-right, `arrow_right_alt` icon, `forge-orange`, transparent bg, hover `forge-orange/10`.
+   - Examples block: eyebrow `Examples:` (12px bold, +0.08em tracking, `forge-label`). Horizontal pill row (overflow-x scroll, scrollbar hidden). Active pill `bg-forge-orange text-white`, inactive `bg-surface-container border-outline-variant text-on-surface-variant`. Below: 3 example questions as plain `<p>`, `forge-text`, hover swaps to `forge-orange` underline.
+3. **Footer Status Bar** — `h-10`, `bg-surface-container-lowest`, top border `outline-variant`. Single line `label-sm` `text-muted` uppercase widely tracked: `Forge Terminal Environment v1.4.2 — Encrypted AI Core Active`. Version string is dynamic.
+
+### Component Mapping
+
+| Stitch element | React component |
+|----------------|-----------------|
+| TopAppBar | `components/chat/AssistantTopBar.tsx` |
+| Sparkle hero | `components/chat/BrandMark.tsx` |
+| Input panel | `components/chat/ChatComposer.tsx` (welcome variant) |
+| Examples row + questions | `components/chat/WelcomeExamples.tsx` |
+| Footer status | `components/chat/AssistantStatusBar.tsx` |
+
+Welcome view appears when `messages.length === 0`. On first user submit, the welcome canvas hands off to the existing `MessageList` + sticky composer in `Chat View (Light Theme)`. Both views share the same TopAppBar and StatusBar shells.
+
+### Brand Mark
+
+Six-point sparkle, single `#D95C41` fill, path:
+
+```
+M24 4L28 20L44 24L28 28L24 44L20 28L4 24L20 20L24 4Z
+```
+
+Used at 64px on welcome view, 24px in TopAppBar. No gradients, no shadows beyond `shadow-sm` on the input panel.
+
+## UI — Chat View (Light)
+
+Design source: Stitch project `1011803010040175047`, screen `Assistant - Chat View (Light Theme)` (`645290fa991d4adba42b68d1ffa1d6e9`). Implementation MUST be pixel-identical to the Stitch render: same Tailwind classes, same spacing, same token names, same animations. Deviations require explicit approval.
+
+### Token Reconciliation With Welcome View
+
+Chat view introduces additional named tokens. Merge into the existing Tailwind config under `theme.extend.colors`:
+
+```ts
+primary: '#d95c41'              // overrides earlier '#a4361f' — Stitch uses brand orange as semantic primary in chat
+'primary-container': '#d95c41'  // overrides earlier '#c54e34'
+'border-subtle': '#e1e3e4'      // = surface-container-highest, used for bubble + composer borders
+'input-bg': '#ffffff'
+'text-ai': '#191c1d'            // alias of on-surface for AI message body
+'text-muted': '#5b5f60'         // overrides earlier '#616566'
+'on-primary-container': '#ffffff'
+'panel-light': '#f8f9fa'        // = surface, used for sticky footer background
+```
+
+Reasoning: Stitch consolidated the dark `#a4361f` semantic primary to brand orange when palette flipped to light. Welcome view tokens stay valid because all `forge-orange`-keyed utilities continue to map to `#D95C41`. Update `primary` and `primary-container` repo-wide; the welcome view does not reference them directly.
+
+### Global CSS Additions
+
+```css
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #ccc; }
+::-webkit-scrollbar-thumb:hover { background: #d95c41; }
+
+.message-transition { animation: slideUp 0.3s cubic-bezier(0, 0, 0.2, 1) forwards; }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+```
+
+`.scrollbar-hide` already present (from welcome view) stays as-is.
+
+### Body & Main Shell
+
+- `<body>`: `bg-background text-on-background h-screen overflow-hidden font-body-md`. Default font becomes `body-md` (Inter 14/1.5/400).
+- `<main>`: `flex flex-col relative h-screen overflow-hidden bg-surface`.
+
+### TopAppBar
+
+Identical structure to welcome view but uses `border-border-subtle` (not `border-outline-variant`) and `sticky top-0 z-50`:
+
+```html
+<header class="flex justify-between items-center h-14 px-4 w-full bg-surface-container-lowest border-b border-border-subtle sticky top-0 z-50">
+  <div class="flex items-center gap-2 text-label-caps font-label-caps font-bold text-on-surface">
+    <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1">auto_awesome</span>
+    Assistant
+  </div>
+  <div class="flex items-center gap-4">
+    <span class="material-symbols-outlined text-text-muted hover:text-primary transition-colors cursor-pointer">open_in_new</span>
+    <span class="material-symbols-outlined text-text-muted hover:text-primary transition-colors cursor-pointer">history</span>
+    <span class="material-symbols-outlined text-text-muted hover:text-primary transition-colors cursor-pointer">close</span>
+  </div>
+</header>
+```
+
+The label `Assistant` is the literal text content (no `<span>` wrap). `text-label-caps font-label-caps` = `Manrope 12/1 +0.05em 700`.
+
+### Conversation Scroll Area
+
+Scroll container wraps a centered column:
+
+```html
+<div class="flex-1 overflow-y-auto flex flex-col items-center">
+  <div class="w-full max-w-2xl px-gutter py-8 flex flex-col gap-8">
+    {messages}
+  </div>
+</div>
+```
+
+- `px-gutter` = `16px` (NOT `24px` — chat view uses a tighter gutter than welcome view; see Spacing Reconciliation below).
+- `py-8` = 32px vertical pad.
+- `gap-8` between message blocks (32px).
+
+### Spacing Reconciliation
+
+Stitch Chat View ships its own spacing scale:
+
+```ts
+spacing: {
+  gutter: '16px',         // chat view
+  'panel-padding': '20px',
+  unit: '4px',
+  margin: '24px',
+}
+```
+
+Welcome view defined a richer scale (`xs/base/sm/gutter:24/md/lg/xl`). To support both pixel-perfectly, set `gutter: '16px'` at the config level and add chat-only spacing only if needed. Welcome view's earlier `p-gutter` (24px) becomes `p-md` (24px) — see migration in plan.
+
+### Message Components
+
+#### UserMessage
+
+```html
+<div class="flex justify-end message-transition">
+  <div class="max-w-[85%] bg-forge-orange text-white px-4 py-2.5 rounded-lg font-body-md shadow-sm">
+    {text}
+  </div>
+</div>
+```
+
+- Background: `forge-orange` (= `#D95C41`).
+- Text: white.
+- Radius: `rounded-lg` (`0.5rem`).
+- Padding: `px-4 py-2.5` (16px / 10px).
+- Width cap: `max-w-[85%]`.
+- Shadow: `shadow-sm`.
+
+#### AssistantMessage
+
+```html
+<div class="flex flex-col gap-3 message-transition" style="animation-delay: 0.1s;">
+  <div class="flex items-center gap-2 text-primary">
+    <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1">auto_awesome</span>
+    <span class="font-label-caps text-[11px] tracking-widest opacity-70 uppercase">Response</span>
+  </div>
+  <div class="bg-surface-container-low border border-border-subtle text-text-ai px-5 py-4 rounded-xl font-body-md leading-relaxed shadow-sm">
+    {body}
+  </div>
+  {related?}
+  {feedback?}
+</div>
+```
+
+- Header: filled sparkle (16px) + `Response` label-caps, color `primary`, opacity 70%, uppercase, wide tracking.
+- Bubble: `bg-surface-container-low` (`#f3f4f5`), 1px `border-subtle`, `rounded-xl` (12px), `px-5 py-4`, `shadow-sm`, `leading-relaxed`.
+- Stagger via `style="animation-delay: 0.1s"` (then 0.2s, 0.3s…).
+- Inline highlights inside body text use `<span class="text-primary font-medium">...</span>`.
+
+#### Related Links Chip Row
+
+```html
+<div class="flex flex-wrap gap-2 mt-1">
+  <div class="flex items-center gap-1.5 bg-surface-container-high border border-border-subtle px-3 py-1.5 rounded-full cursor-pointer hover:border-primary transition-colors">
+    <span class="material-symbols-outlined text-[14px] text-text-muted">link</span>
+    <span class="text-label-sm text-on-surface">Related: Lecture 02 · Project 01</span>
+  </div>
+</div>
+```
+
+- Pill shape (`rounded-full`).
+- `bg-surface-container-high` (`#e7e8e9`), `border-subtle`.
+- Hover swaps border to `primary`.
+- `text-label-sm` = `JetBrains Mono 11/1 500`.
+- Content format: `Related: <lessons joined by ' · '>`.
+
+#### Feedback Row
+
+```html
+<div class="flex items-center gap-4 mt-2 px-1">
+  <span class="text-label-sm text-text-muted">Was this answer useful?</span>
+  <div class="flex items-center gap-3">
+    <button class="material-symbols-outlined text-text-muted hover:text-primary transition-colors text-[18px]">thumb_up</button>
+    <button class="material-symbols-outlined text-text-muted hover:text-primary transition-colors text-[18px]">thumb_down</button>
+  </div>
+</div>
+```
+
+- Static copy `Was this answer useful?` (English) — store as constant for future i18n.
+- Buttons are bare `<button>` with Material Symbol class. No background.
+
+### Sticky Bottom Composer
+
+Composer is a `<footer>` outside the scroll area, sticky to the bottom of `<main>`:
+
+```html
+<footer class="bg-surface flex flex-col items-center z-10">
+  <div class="w-full max-w-2xl px-gutter pb-6 pt-2">
+    <div class="relative flex items-center">
+      <div class="absolute left-4 flex items-center pointer-events-none">
+        <span class="material-symbols-outlined text-text-muted text-[20px]">search</span>
+      </div>
+      <input
+        class="w-full bg-input-bg border border-border-subtle rounded-xl pl-11 pr-14 py-3.5 text-body-lg text-on-surface placeholder:text-text-muted focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none shadow-sm"
+        placeholder="Ask follow up"
+        type="text"
+      />
+      <div class="absolute right-3 flex items-center">
+        <button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary-container text-on-primary-container hover:opacity-90 active:scale-95 transition-all shadow-md">
+          <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 0">arrow_upward</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  {status bar}
+</footer>
+```
+
+Chat composer differs from welcome composer:
+
+| Property | Welcome | Chat |
+|----------|---------|------|
+| Element | `<textarea min-h-[160px]>` | `<input type="text">` |
+| Icon left | none | `search` 20px |
+| Placeholder | `What would you like to know?` | `Ask follow up` |
+| Send | inline `arrow_right_alt` text-only | filled 40×40 square `arrow_upward` button, `bg-primary-container shadow-md` |
+| Padding | `p-5` | `pl-11 pr-14 py-3.5` |
+| Border focus | `forge-orange` ring | `primary` ring + `primary` border |
+| Container | inline panel inside canvas | sticky footer, separate from scroll |
+
+Both composers MUST stay in sync on submit semantics but are distinct React components.
+
+### Status Bar (Chat Variant)
+
+Identical layout to welcome view footer but text differs:
+
+```
+Forge Terminal Environment v1.4.2 — AI Core Active
+```
+
+(`Encrypted ` prefix dropped.) Treat as the same `AssistantStatusBar` component with a `variant` prop or a config flag. Both views share the component; the copy changes when in chat state.
+
+### Animation Rules
+
+- Every message block gets class `message-transition`.
+- Apply `style="animation-delay: ${index * 0.1}s"` per block for stagger, capped at 0.3s (after that, no delay).
+- Use `prefers-reduced-motion: reduce` to disable the slide-up animation.
+
+### Pixel-Parity Contract
+
+The implementation MUST satisfy ALL of:
+
+1. Class lists on each element match Stitch verbatim where possible. Reorder only when a class is split across multiple props.
+2. Identical Tailwind tokens (`bg-surface-container-low`, `border-border-subtle`, `text-text-ai`, `bg-forge-orange`, `bg-primary-container`, `text-primary`, `text-label-sm`, `font-body-md`, `font-label-caps`).
+3. Identical font sizes and weights (Inter 14/1.5/400 body, Manrope 12/1 700 +0.05em label-caps, JetBrains Mono 11/1 500 label-sm).
+4. Identical hex values for `#D95C41`, `#f3f4f5`, `#e7e8e9`, `#e1e3e4`, `#ffffff`, `#191c1d`, `#5b5f60`, `#dfc0b9`, `#f8f9fa`.
+5. Identical structure: TopAppBar (h-14, sticky z-50), centered scroll column (`max-w-2xl px-gutter py-8 gap-8`), sticky footer composer (`max-w-2xl px-gutter pb-6 pt-2`), 40px status bar with `border-t` and `bg-surface-container-lowest`.
+6. Identical message-transition animation timing.
+7. Custom 4px scrollbar with `#d95c41` hover.
+
+### Component Mapping (Chat View)
+
+| Stitch element | React component |
+|----------------|-----------------|
+| TopAppBar | `components/chat/AssistantTopBar.tsx` (shared with welcome) |
+| Scroll column | `components/chat/MessageThread.tsx` (new) |
+| User bubble | `components/chat/UserMessage.tsx` (new) |
+| AI block (header + bubble + related + feedback) | `components/chat/AssistantMessage.tsx` (new) |
+| Related links chip | `components/chat/RelatedLinks.tsx` (new) |
+| Feedback row | `components/chat/MessageFeedback.tsx` (new) |
+| Inline highlight `<span text-primary font-medium>` | `components/chat/Highlight.tsx` (new) or markdown renderer rule |
+| Sticky composer | `components/chat/ChatFollowUpComposer.tsx` (new — separate from welcome composer) |
+| Status bar | `components/chat/AssistantStatusBar.tsx` (shared, accepts `variant` prop) |
+
+### Data Contract Adjustments
+
+To render related-links chips and inline highlights without parsing HTML, the SSE event schema in `@assistant/shared/events` needs additions. Phase-1 minimum:
+
+- `assistant_message.related` event carrying `{ items: Array<{ label: string; route?: string }> }`.
+- Inline highlights derived client-side by matching citation titles inside the message text, OR added as explicit `assistant_message.highlight` spans tied to character ranges. Defer the second option until eval shows the first is insufficient.
+
+`MessageFeedback` POSTs to a future `POST /api/messages/:id/feedback` endpoint; phase-1 stub stores locally and logs.
 
 ## Goal
 
@@ -44,7 +386,9 @@ Frontend:
 
 - React.
 - Vite.
-- Tailwind CSS.
+- Tailwind CSS (light-mode default; see `UI Theme & Welcome View (Light)`).
+- Fonts: Manrope (headlines/labels), Inter (body), JetBrains Mono (status strip).
+- Material Symbols Outlined for icons.
 - TanStack Router.
 - TanStack Query.
 - Zustand.
@@ -401,15 +745,22 @@ Conversation state should store:
 
 ### Core UX
 
-Chat UI should feel like a focused learning copilot, not a generic chatbot.
+Chat UI should feel like a focused learning copilot, not a generic chatbot. Light theme is the phase-1 default; layout follows the Stitch `Assistant - Welcome View (Light Theme, No Sidebar)` + `Chat View (Light Theme)` screens documented in `UI Theme & Welcome View (Light)`.
 
-Main regions:
+Two view states share the same shell:
 
-- conversation thread
-- citations panel or expandable citation blocks
-- suggested next prompts
-- source route links back into academy content
-- loading and tool-status indicators
+- **Welcome view** (`messages.length === 0`): centered sparkle mark, oversized input panel with placeholder `What would you like to know?`, examples eyebrow + pills (`AGENTS.md` active by default, then `State Mgmt`, `Verification`, `Init Phase`), and three clickable example questions. No sidebar.
+- **Chat view** (after first turn): conversation thread, inline citation blocks per assistant message, suggestion chips after the latest answer, sticky composer at the bottom. Same TopAppBar and footer status strip.
+
+Shared regions:
+
+- TopAppBar with sparkle brand mark, `ASSISTANT` label, and `open_in_new` / `history` / `close` actions.
+- Conversation thread (chat view only).
+- Citations rendered inline under each assistant message; expandable when count > 3.
+- Suggested next prompts as chips below the latest assistant turn.
+- Source route links resolve back into `academy/` content routes.
+- Loading and tool-status indicators are inline (no modal spinners).
+- Footer status strip (`label-sm`, uppercase, `text-muted`) for environment/version.
 
 ### State Split
 

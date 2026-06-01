@@ -1,93 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  color-scheme: dark;
-  font-family: Inter, system-ui, sans-serif;
-  background: #0f172a;
-  color: #e2e8f0;
+  color-scheme: light;
+}
+
+html,
+html.light {
+  background-color: #f8f9fa;
+  color: #191c1d;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 * {
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
-}
-
 button,
-textarea {
+textarea,
+input {
   font: inherit;
 }
 
-#root {
-  min-height: 100vh;
+textarea::placeholder,
+input::placeholder {
+  color: #5b5f60;
 }
 
-.page {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 32px 16px 64px;
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
-.stack {
-  display: grid;
-  gap: 16px;
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-.panel {
-  padding: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 16px;
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(8px);
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
 }
 
-.hero h1,
-.panel h2 {
-  margin-top: 0;
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #d95c41;
 }
 
-.composer textarea {
-  width: 100%;
-  margin: 8px 0 12px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: #020617;
-  color: inherit;
+.message-transition {
+  animation: slideUp 0.3s cubic-bezier(0, 0, 0.2, 1) forwards;
 }
 
-.composer button,
-.chips button {
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(96, 165, 250, 0.35);
-  background: #1d4ed8;
-  color: white;
-  cursor: pointer;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.message-box {
-  min-height: 96px;
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(2, 6, 23, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  white-space: pre-wrap;
-}
-
-.error {
-  color: #fca5a5;
-}
-
-@media (max-width: 640px) {
-  .page {
-    padding: 20px 12px 40px;
+@media (prefers-reduced-motion: reduce) {
+  .message-transition {
+    animation: none;
   }
 }

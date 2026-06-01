@@ -1,27 +1,24 @@
-import { integer, jsonb, pgTable, text, timestamp, uuid, vector } from 'drizzle-orm/pg-core';
+import { jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import type { Citation } from '@assistant/shared/citations';
+import type { Suggestion } from '@assistant/shared/suggestions';
 
-export const documentSources = pgTable('document_sources', {
+// Phase 1 is agentic docs access (in-memory DocIndex) — no document_*/pgvector tables here.
+// A vector layer + document_embeddings would be re-added later with a pgvector migration.
+
+export const conversations = pgTable('conversations', {
   id: uuid('id').defaultRandom().primaryKey(),
-  sourcePath: text('source_path').notNull(),
-  contentType: text('content_type').notNull(),
-  slug: text('slug'),
   title: text('title').notNull(),
-  route: text('route'),
-  checksum: text('checksum').notNull(),
-  metadata: jsonb('metadata').$type<Record<string, string | number | boolean | null>>(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const documentChunks = pgTable('document_chunks', {
+export const messages = pgTable('messages', {
   id: uuid('id').defaultRandom().primaryKey(),
-  documentSourceId: uuid('document_source_id').notNull(),
-  sectionHeading: text('section_heading'),
-  chunkIndex: integer('chunk_index').notNull(),
+  conversationId: uuid('conversation_id').notNull(),
+  role: text('role').notNull(), // 'user' | 'assistant'
   content: text('content').notNull(),
-  tokenEstimate: integer('token_estimate').notNull(),
-});
-
-export const documentEmbeddings = pgTable('document_embeddings', {
-  chunkId: uuid('chunk_id').primaryKey(),
-  embedding: vector('embedding', { dimensions: 1536 }).notNull(),
+  citationsJson: jsonb('citations_json').$type<Citation[]>(),
+  suggestionsJson: jsonb('suggestions_json').$type<Suggestion[]>(),
+  traceId: text('trace_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
