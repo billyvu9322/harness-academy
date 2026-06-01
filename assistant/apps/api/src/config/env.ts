@@ -12,6 +12,9 @@ const envSchema = z.object({
   OPENAI_CHAT_MODEL: z.string().min(1).default('cx/gpt-5.5'),
   PORT: z.coerce.number().default(3001),
   WEB_ORIGIN: z.string().url().default('http://localhost:5174'),
+  // Extra allowed CORS origins (comma-separated) — e.g. the academy site that embeds the
+  // assistant widget. WEB_ORIGIN is always allowed in addition to these.
+  WEB_ORIGINS: z.string().optional(),
 });
 
 export const env = envSchema.parse(process.env);

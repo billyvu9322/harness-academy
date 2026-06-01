@@ -21,4 +21,12 @@ describe('buildSystemPrompt', () => {
   test('uses the provided user language', () => {
     expect(buildSystemPrompt({ userLanguage: 'English' })).toContain('English');
   });
+
+  test('omits the blueprint directive in qa mode (default)', () => {
+    expect(buildSystemPrompt()).not.toContain('harness_blueprint');
+  });
+
+  test('adds the blueprint directive in harness-design mode', () => {
+    expect(buildSystemPrompt({ mode: 'harness-design' })).toContain('harness_blueprint');
+  });
 });

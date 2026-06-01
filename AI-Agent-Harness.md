@@ -42,10 +42,9 @@ Prompt engineering is only one part of harness engineering. A prompt can ask the
 The resource map frames harness engineering as a field at the intersection of:
 
 - Context engineering.
-- Evaluation.
-- Observability.
+- Evaluation & Observability.
 - Orchestration.
-- Safe autonomy.
+- Guardrails & Safe autonomy.
 - Software architecture.
 
 This matters because a practical harness is not only a prompt file or a tool wrapper. It is the full operating surface that determines what the agent sees, what it may do, how it proves work, how humans intervene, and how failures improve the next run.

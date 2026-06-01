@@ -1,0 +1,15 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.turbo
+**/.turbo
+**/dist-widget
+.env
+.env.*
+!.env.example
+postgres-data
+assistant-harness.zip
+*.log
+.git
+# NOTE: corpus/ is intentionally NOT ignored — the image bundles it (see Dockerfile).

@@ -14,14 +14,45 @@ describe('mapStreamEvent', () => {
     expect(out).toEqual({ type: 'message.started' });
   });
 
-  test('maps a tool_called item to tool.started with the tool name', () => {
-    const out = mapStreamEvent({ type: 'run_item_stream_event', name: 'tool_called', item: { rawItem: { name: 'grep_docs' } } });
-    expect(out).toEqual({ type: 'tool.started', tool: 'grep_docs' });
+  test('maps a tool_called item to tool.started with callId + detail from args', () => {
+    const out = mapStreamEvent({
+      type: 'run_item_stream_event',
+      name: 'tool_called',
+      item: { rawItem: { name: 'grep_docs', callId: 'call_1', arguments: '{"pattern":"verification gate"}' } },
+    });
+    expect(out).toEqual({ type: 'tool.started', tool: 'grep_docs', callId: 'call_1', detail: 'verification gate' });
   });
 
-  test('maps a tool_output item to tool.completed', () => {
-    const out = mapStreamEvent({ type: 'run_item_stream_event', name: 'tool_output', item: { rawItem: { name: 'read_doc_section' } } });
-    expect(out).toEqual({ type: 'tool.completed', tool: 'read_doc_section' });
+  test('builds read_doc_section detail from docId + heading', () => {
+    const out = mapStreamEvent({
+      type: 'run_item_stream_event',
+      name: 'tool_called',
+      item: { rawItem: { name: 'read_doc_section', callId: 'c2', arguments: '{"docId":"a/b.md","heading":"Intro"}' } },
+    });
+    expect(out).toMatchObject({ type: 'tool.started', tool: 'read_doc_section', callId: 'c2', detail: 'a/b.md · Intro' });
+  });
+
+  test('maps a tool_output item to tool.completed with callId + summary', () => {
+    const out = mapStreamEvent({
+      type: 'run_item_stream_event',
+      name: 'tool_output',
+      item: { rawItem: { name: 'grep_docs', callId: 'call_1' }, output: [{ a: 1 }, { a: 2 }, { a: 3 }] },
+    });
+    expect(out).toEqual({ type: 'tool.completed', tool: 'grep_docs', callId: 'call_1', summary: '3 matches' });
+  });
+
+  test('summarizes a read_doc_section not-found output', () => {
+    const out = mapStreamEvent({
+      type: 'run_item_stream_event',
+      name: 'tool_output',
+      item: { rawItem: { name: 'read_doc_section', callId: 'c2' }, output: { found: false } },
+    });
+    expect(out).toMatchObject({ type: 'tool.completed', tool: 'read_doc_section', callId: 'c2', summary: 'not found' });
+  });
+
+  test('tool.started callId falls back to the tool name when missing', () => {
+    const out = mapStreamEvent({ type: 'run_item_stream_event', name: 'tool_called', item: { rawItem: { name: 'list_docs' } } });
+    expect(out).toMatchObject({ type: 'tool.started', tool: 'list_docs', callId: 'list_docs' });
   });
 
   test('maps message_output_created to message.completed', () => {
@@ -37,7 +68,8 @@ describe('mapStreamEvent', () => {
   test('every mapped event validates against the shared schema', () => {
     const samples = [
       { type: 'raw_model_stream_event', data: { type: 'output_text_delta', delta: 'x' } },
-      { type: 'run_item_stream_event', name: 'tool_called', item: { rawItem: { name: 'list_docs' } } },
+      { type: 'run_item_stream_event', name: 'tool_called', item: { rawItem: { name: 'list_docs', callId: 'c', arguments: '{}' } } },
+      { type: 'run_item_stream_event', name: 'tool_output', item: { rawItem: { name: 'list_docs', callId: 'c' }, output: [] } },
       { type: 'run_item_stream_event', name: 'message_output_created', item: {} },
     ];
     for (const s of samples) {

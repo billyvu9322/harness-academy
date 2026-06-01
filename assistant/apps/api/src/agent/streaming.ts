@@ -6,7 +6,7 @@ import { initLlm } from './llm';
 import { assistant } from './runtime';
 import { buildCitations } from '../docs/citations';
 import { checkInput } from './guardrails';
-import { createAssistantContext } from './context';
+import { createAssistantContext, type AssistantContext } from './context';
 import { buildAgentInput, type HistoryTurn } from './history';
 
 const MAX_TURNS = 8;
@@ -14,6 +14,54 @@ const MAX_SUGGESTIONS = 3;
 
 function toolName(item: any): string {
   return item?.rawItem?.name ?? item?.name ?? 'tool';
+}
+
+function safeParseArgs(raw: unknown): Record<string, any> {
+  if (typeof raw !== 'string') return raw && typeof raw === 'object' ? (raw as Record<string, any>) : {};
+  try {
+    const v = JSON.parse(raw);
+    return v && typeof v === 'object' ? v : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Human-readable detail for a tool.started event, from its call arguments. */
+function buildToolDetail(name: string, args: Record<string, any>): string | undefined {
+  switch (name) {
+    case 'grep_docs':
+      return typeof args.pattern === 'string' ? args.pattern : undefined;
+    case 'read_doc_section':
+      return typeof args.docId === 'string'
+        ? args.heading
+          ? `${args.docId} · ${args.heading}`
+          : args.docId
+        : undefined;
+    case 'harness_blueprint':
+      return typeof args.workflow === 'string' ? args.workflow : undefined;
+    case 'list_docs':
+      return Array.isArray(args.contentTypes) && args.contentTypes.length
+        ? args.contentTypes.join(', ')
+        : undefined;
+    default:
+      return undefined;
+  }
+}
+
+/** Small summary for a tool.completed event, from its output (never the full payload). */
+function buildToolSummary(name: string, output: any): string | undefined {
+  if (Array.isArray(output)) {
+    const unit = name === 'grep_docs' ? 'matches' : name === 'list_docs' ? 'docs' : 'results';
+    return `${output.length} ${unit}`;
+  }
+  if (output && typeof output === 'object') {
+    if (output.found === false) return 'not found';
+    if (name === 'read_doc_section') return `section: ${output.heading ?? 'whole doc'}`;
+    if (name === 'harness_blueprint' && Array.isArray(output.sections)) {
+      return `${output.sections.length} sections`;
+    }
+  }
+  return undefined;
 }
 
 /** Pure mapper: one SDK stream event → one app StreamEvent (or null if not surfaced). */
@@ -27,11 +75,22 @@ export function mapStreamEvent(ev: any): StreamEvent | null {
     return null;
   }
   if (ev?.type === 'run_item_stream_event') {
+    const raw = ev.item?.rawItem;
+    const name = toolName(ev.item);
+    const callId: string = raw?.callId ?? name;
     switch (ev.name) {
-      case 'tool_called':
-        return { type: 'tool.started', tool: toolName(ev.item) };
-      case 'tool_output':
-        return { type: 'tool.completed', tool: toolName(ev.item) };
+      case 'tool_called': {
+        const detail = buildToolDetail(name, safeParseArgs(raw?.arguments));
+        return detail
+          ? { type: 'tool.started', tool: name, callId, detail }
+          : { type: 'tool.started', tool: name, callId };
+      }
+      case 'tool_output': {
+        const summary = buildToolSummary(name, ev.item?.output);
+        return summary
+          ? { type: 'tool.completed', tool: name, callId, summary }
+          : { type: 'tool.completed', tool: name, callId };
+      }
       case 'message_output_created':
         return { type: 'message.completed' };
       default:
@@ -57,6 +116,8 @@ export function buildSuggestions(citations: Citation[]): Suggestion[] {
 export interface StreamOptions {
   userLanguage?: string;
   history?: HistoryTurn[];
+  /** Caller-owned context so it can read reads/toolCalls for a trace after the stream ends. */
+  context?: AssistantContext;
 }
 
 /** Drive a streamed agent run and yield typed app events. */
@@ -73,7 +134,7 @@ export async function* streamAssistant(
     return;
   }
 
-  const context = createAssistantContext(opts.userLanguage);
+  const context = opts.context ?? createAssistantContext({ userLanguage: opts.userLanguage });
   try {
     const input = buildAgentInput(opts.history ?? [], message);
     const result = await run(assistant.orchestrator, input as Parameters<typeof run>[1], {

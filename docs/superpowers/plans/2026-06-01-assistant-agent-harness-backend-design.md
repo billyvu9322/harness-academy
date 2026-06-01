@@ -537,20 +537,22 @@ B3–B6 its Phase 4, B7 its Phase 7, B8 is new.
 | **B3** ✅ | Agent core (non-stream) | `agent/prompts.ts`, `guardrails.ts` (checkInput/checkOutput), `context.ts`, `harnessAssistant.ts` (orchestrator + docs tools + guardrails), `runtime.ts` (index singleton), `POST /api/chat/message`; `docs/citations.ts` `buildCitations` | DONE — TDD, **55 tests** green. Live golden Q (`Verification gate khác E2E?`) → grounded VN answer + **6 provenance citations** w/ routes; output guardrail enforces ≥1 citation (counts only sections actually `read_doc_section`-ed). **Specialists (LessonGuide/HarnessDesigner/SuggestionWriter) deferred** — orchestrator + docs tools meet the gate; specialists land with suggestions/streaming (B4) and handoffs (P2). |
 | **B4** ✅ | Streaming SSE | `agent/streaming.ts` (`mapStreamEvent` + `buildSuggestions` + `streamAssistant`); filled `routes/chat.ts` SSE (`reply.hijack`); extended `shared/events.ts` (`tool.started`/`tool.completed`/`message.completed`) | DONE — TDD, **65 tests** green. Live SSE (`Feature list là gì?`): HTTP 200 text/event-stream, 211 `message.delta`, 7 `tool.started`/`tool.completed`, 4 `citation`, 1 `suggestion`, `done`. Suggestions deterministic from cited docs (SuggestionWriter-agent still deferred). |
 | **B5** ✅ | Persistence + sessions | `db/schema.ts` (conversations/messages; `document_*`/pgvector dropped — agentic), `db/mappers.ts`, `db/repo.ts`, `agent/history.ts` (multi-turn input); persist in `routes/chat.ts`, fill `routes/conversations.ts`; drizzle migration; docker pg on **5433** | DONE — TDD pure pieces (**71 tests**); live: 2-turn convo persists, follow-up uses history, `GET /api/conversations/:id/messages` restores `[user,assistant,user,assistant]`, list shows derived title. conversationId via response body (/message) + `X-Conversation-Id` header (/stream). |
-| **B6** | Observability + feedback loops | `observability/trace.ts` AgentHooks → `chat_traces`; output-guardrail regenerate-once; `POST /api/messages/:id/feedback` | every turn writes a trace row; a bad-output turn regenerates once |
-| **B7** | Eval | `evals/goldenQuestions.ts`, `runEvals.ts` (LLM-judge) | `pnpm eval` passes baseline on golden set |
-| **B8** | Language / cross-lingual | `RunContext.userLanguage` instruction; bilingual keyword expansion for `grep_docs` (VN + EN terms); `isEnabled` tool-gating by `mode`/`intent` | VN query finds EN docs via keyword variants; answer in VN; blueprint tool only in `harness-design` mode |
+| **B6** ✅ | Observability + feedback loops | `chat_traces`+`user_feedback` tables; `observability/trace.ts` `buildTraceSummary`; `agent/regenerate.ts` `runWithRegenerate` (app-level grounding, SDK output-tripwire removed); context tracks `toolCalls`; `POST /api/messages/:id/feedback`; traces persisted in both chat routes | DONE — TDD (**77 tests**: regenerate loop + trace summary pure). Live: turn → `chat_traces` row (status/cites=5/tools=8/docs=2/latency/regenerated); feedback up recorded, bad vote→400. Regenerate-once: corrective prompt re-run when answer ungrounded (unit-proven). Note: ~28s/turn (8 tool calls on cx/gpt-5.5). |
+| **B7** ✅ | Eval | `evals/goldenQuestions.ts` (6 golden Qs + integrity tests), `judge.ts` (`buildJudgePrompt`/`parseJudgeVerdict`), `score.ts` (`scoreQuestion`/`aggregate`/`meetsBaseline`, BASELINE pass≥70% & avg≥3.5), `runEvals.ts` live runner; `pnpm eval` (api + root) | DONE — TDD pure pieces (**24 new tests**, 101 total green, typecheck clean). Live `pnpm eval` vs `cx/gpt-5.5`: **6/6 passed (100%), avg judge 4.83/5**, gate exit 0. Judge calibrated after first run mis-graded good cited answers as "fabrication risk" for extra on-topic detail (judge has no corpus access) → rubric reframed as *minimum* coverage, fabrication defined narrowly. Out-of-corpus FX-rate Q correctly refused (no-cite, judge 5/5). |
+| **B9** ✅ | Enriched stream events (timeline) | `shared/events.ts` `tool.started` (+`callId`,`detail?`) & `tool.completed` (+`callId`,`summary?`); `streaming.ts` `buildToolDetail`/`buildToolSummary`/`safeParseArgs` + enriched `mapStreamEvent` (reads `rawItem.callId`+`arguments`, `item.output`) | DONE — TDD (**125 tests**, typecheck clean). Live stream: 6 started / 6 done, **all callId-matched 1:1**; detail = grep pattern (bilingual-expanded) / `docId · heading` / contentTypes; summary = "30 docs" / "10 matches" / "section: …". Payloads small (counts only, no full output). |
+| **B8** ✅ | Language / cross-lingual | `docs/keywords.ts` `expandQuery` (VN↔EN term groups), `search.ts` `grepDocsMulti` (OR-match, ranked) wired into `grep_docs`; `agent/blueprint.ts` `buildHarnessBlueprint` + `harness_blueprint` tool gated via `isEnabled` (mode); `context.AssistantMode` (`qa`/`harness-design`) threaded through `RunMessageOptions`→context→prompt; mode-aware `maxTurns` (qa 8 / design 16); `verify-b8.ts` | DONE — TDD (**21 new tests, 122 total green**, typecheck clean). Live `verify-b8`: (1) VN query "cổng xác minh" → EN "verification gate" source, 4 cites, VN answer ✅; (2a) qa mode never calls `harness_blueprint` (isEnabled off) ✅; (2b) harness-design mode invokes blueprint then grounds **23 cites** across the 7 primitive sections ✅. Fix mid-run: design mode blew the 8-turn budget → made `maxTurns` mode-aware. `userLanguage` instruction already wired since B3. |
 
 ### UI integration phases (each depends on a backend phase)
 
 | UI | Name | Files | Depends | Gate |
 |----|------|-------|---------|------|
 | **U1** ✅ | Wire real SSE | `lib/sse.ts` (`splitSseBuffer`/`readSseStream`), `features/chat/useChatStream.tsx` (real stream, conversationId via `X-Conversation-Id`), `ChatPage` renders `SuggestionChips` | B4 | DONE — vitest added (web), splitter TDD (4 tests). Live browser (Playwright): `Feature list là gì?` streams answer live + Related citations + Next-prompt chip + feedback row. NOTE: RelatedLinks shows 7× same doc title (per-section citations) → dedup by doc in **U2**. |
-| **U2** | Citations + related | `components/chat/CitationList.tsx`, `RelatedLinks.tsx` | B4 | citations render; route links → academy |
-| **U3** | Suggestion chips | `components/chat/SuggestionChips.tsx` | B3/B4 | chips from `suggestion` events; click → new turn |
-| **U4** | Status / tool indicators | `components/chat/AssistantStatusBar.tsx` | B4 | docs-access/tool status shows inline during stream |
-| **U5** | Conversation restore | `features/chat/chatQuery.ts` (TanStack Query), `components/chat/ChatPage.tsx` | B5 | reload → thread restored from server |
-| **U6** | Feedback thumbs | `components/chat/MessageFeedback.tsx` | B6 | thumb up/down → POST → stored |
+| **U2** ✅ | Citations + related | `lib/citations.ts` (`dedupeCitationsByDoc`/`academyHref`), `components/chat/RelatedLinks.tsx` (per-doc clickable pills); `VITE_ACADEMY_BASE_URL` | B4 | DONE — TDD (6 helper tests, 10 web total). Live: per-section citations deduped to 3 distinct docs, each an `<a>` → academy route (`localhost:5173/lectures/09-victory-som`, etc.). Fixes the U1 7×-repeat nit. |
+| **U3** ✅ | Suggestion chips | `components/chat/SuggestionChips.tsx`, wired in `ChatPage` + `useChatStream` (collects `suggestion` events) | B3/B4 | DONE — `useChatStream` collects `suggestion` events → `setSuggestions`; `ChatPage` renders `SuggestionChips` (shown when present & not loading); `onSelect` = `submit(prompt)` → new turn. Empty list → null. Typecheck + build clean. |
+| **U4** ✅ | Status / tool indicators | `lib/agentStatus.ts` (`toolStatusLabel`/`nextStatus`, `STATUS_THINKING`/`STATUS_ANSWERING`), `components/chat/AssistantToolStatus.tsx` (inline `role="status"`); wired `useChatStream`→`Turn.status`→`MessageThread`→`AssistantMessage` | B4 | DONE — TDD (**8 status-reducer tests**, 18 web total green; typecheck + vite build clean). Status off the same SSE stream: `message.started`→"Đang xử lý…", `tool.started`→friendly VN label per tool (grep/read/list/blueprint), `tool.completed`→thinking, first `message.delta`→"Đang soạn câu trả lời…", `done`/`error`/`completed`→cleared; empty bubble suppressed while only status shows. **Naming:** plan said `AssistantStatusBar.tsx` but that name is the static footer brand → implemented as `AssistantToolStatus.tsx` to avoid collision. Live browser check not run this pass (needs api+pg+router up); logic + render path verified by unit tests + build. |
+| **U5** ✅ | Conversation restore | `features/chat/restore.ts` (`messagesToTurns` pure map), `chatApi.getConversationMessages`, `chatQuery.conversationMessagesQuery`; `useChatStream` persists `X-Conversation-Id` → `localStorage['harness.conversationId']` + restore-on-mount effect | B5 | DONE — sub-agent + TDD (6 mapping tests). On mount, stored id → GET `/api/conversations/:id/messages` → `messagesToTurns` seeds `turns` (empty-turns guard, 404 clears stored id, never crashes); restored assistant turns carry `serverMessageId` so feedback works. Typecheck + build clean. |
+| **U6** ✅ | Feedback thumbs | `chatApi.postFeedback`, `useChatStream.vote` + capture `assistant_message.related.messageId` → `Turn.serverMessageId`; `MessageThread`/`AssistantMessage` thread real id; `ChatPage` `onVote={vote}`; **`routes/chat.ts` now emits `assistant_message.related {messageId, items}` after persisting the assistant row** | B6 | DONE — sub-agent + TDD (2 api-shape tests). **Live-verify caught a gap:** the web captured `assistant_message.related` but the stream route never emitted it → feedback row never appeared. Fixed: route writes the event with the persisted `messageId` after the run (client drains it past `done`). Live (Playwright): thumb-up → `POST /api/messages/4d678d2d…/feedback` → **200 OK**; feedback row renders only with a real server id; on restore (U5), `messagesToTurns` sets `serverMessageId` from the DB so older turns also get feedback. |
+| **U7** ✅ | Agent timeline | `features/chat/agentEvent.ts` (`toAgentEvent` adapter + `reduceAgentEvent` + `TimelineStep`), `components/chat/AgentTimeline.tsx`; wired through `useChatStream`→`Turn.timeline`→`AssistantMessage` | B9 | DONE — sub-agent + TDD (**18 reducer/adapter tests**). Live steps off the SSE stream: each grep/read = a step (friendly label + `detail`/`summary`), **start↔done paired strictly by `callId`** (repeated `grep_docs` closes the right step — explicitly tested), single "Generating response" step from the first delta (`message.started` ignored), `done` collapses to "Done in Ns · k steps" (expandable). Supersedes the U4 single-line status when steps exist. **All UI green: 44 web tests, typecheck + vite build clean.** |
 
 ### Critical path
 
@@ -571,6 +573,68 @@ Milestones:
 - **First correct demo** = + B2 / B3 (answer is grounded and cited).
 - Persistence, feedback, eval, and language harden after the demo path works.
 
-> Still pending (offered, not yet written): §16 Feedback Loops & Guardrails (loop hierarchy +
-> regenerate-once code) and §17 Language Handling & Cross-Lingual Retrieval (`isEnabled`
-> mode-gating, query-translation-not-answer-translation rule). Add on request.
+> Feedback loops + guardrails shipped in **B6** (`runWithRegenerate`, `chat_traces`, feedback
+> endpoint). Language / cross-lingual + `isEnabled` mode-gating shipped in **B8** (`expandQuery`,
+> `grepDocsMulti`, `harness_blueprint` gated by mode). §16 below specifies the agent-timeline UX.
+
+---
+
+## 16. Agent Timeline (Streaming UX)
+
+Goal: while the agent works, show the user *what it is doing* (searching docs, reading a
+section, drafting) as a live step list — not just a spinner. Built on the existing SSE stream.
+
+### Current emitted events (baseline)
+
+`message.started` (once per LLM turn), `message.delta`, `message.completed`, `tool.started {tool}`,
+`tool.completed {tool}`, `citation` (batched after run), `suggestion`, `done`, `error`.
+The tool events carry **only the tool name** — no args, no result, no correlation id.
+
+### Gaps vs a useful timeline
+
+- No `callId` → can't reliably pair start↔done when the same tool (e.g. `grep_docs`) runs
+  several times in one turn. Matching by name closes the wrong step.
+- No `detail` → a step reads "grep_docs" instead of "Searching: verification gate".
+- `message.started` fires once **per LLM turn** (each tool round) → mapping it to a "generating"
+  step spawns several spurious steps.
+- No reasoning/thinking events — the router uses Chat Completions, which doesn't stream
+  reasoning. `thinking_*` is therefore **deferred** (add only if a reasoning-capable model lands).
+
+### B9 — enrich the event contract (backend)
+
+```ts
+// shared/events.ts
+{ type: 'tool.started',   tool: string, callId: string, detail?: string }
+{ type: 'tool.completed', tool: string, callId: string, summary?: string }
+```
+
+`streaming.ts` `mapStreamEvent`:
+- `tool_called` item → read `callId` + `arguments`; build `detail` (grep `pattern`, or
+  `docId · heading`, or blueprint `workflow`).
+- `tool_output` item → same `callId`; build a **small** `summary` (e.g. "12 matches",
+  "section: Verification gate"). Never dump full tool output (size/token blowup).
+- Verify the SDK item exposes `callId` (probe like earlier phases) before relying on it.
+
+### U7 — timeline UI (frontend)
+
+- `features/chat/agentEvent.ts`: `toAgentEvent(StreamEvent): AgentEvent | null` adapter +
+  the provided `reduceAgentEvent`. Mapping:
+  - `tool.started`→`tool_start {name: label(tool), detail, eventId: callId}`,
+    `tool.completed`→`tool_done {eventId: callId, result: summary}`.
+  - `message.delta`→ derive `text_start` on the **first** delta only, then `text_delta`.
+    Ignore `message.started` for the timeline (avoids duplicate "Generating" steps).
+  - `done`/`error` pass through.
+  - tool→label map: `list_docs`→"Listing docs", `grep_docs`→"Searching docs",
+    `read_doc_section`→"Reading section", `harness_blueprint`→"Drafting blueprint".
+- `components/chat/AgentTimeline.tsx`: render `TimelineStep[]` while streaming; collapse to a
+  one-line "Done in Ns · k steps" summary (expandable) after `done`.
+- Place inside `AssistantMessage` above the answer body.
+
+### Reducer notes (provided `reduceAgentEvent`)
+
+The reducer is sound once events carry `callId`/`detail`. Required for correctness:
+- **`eventId` (callId) is mandatory** — without it `tool_done` matches by label and closes the
+  wrong step when a tool repeats. B9 supplies it.
+- Feed `text_start` from the first `text_delta`, not from `message.started`.
+- `thinking_*`, `kind: 'stage'`, and `parentId` are unused by phase-1 backend (flat tool list);
+  they stay in the type for a later "group grep+read under a Researching stage" enhancement.

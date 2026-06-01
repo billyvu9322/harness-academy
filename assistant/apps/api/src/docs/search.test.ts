@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildDocIndex, type DocIndex } from './index';
-import { grepDocs, readDocSection } from './search';
+import { grepDocs, grepDocsMulti, readDocSection } from './search';
 
 let root: string;
 let index: DocIndex;
@@ -75,6 +75,35 @@ describe('grepDocs', () => {
 
   test('treats the pattern as case-insensitive regex but does not crash on special chars', () => {
     expect(() => grepDocs(index, 'gate.*test')).not.toThrow();
+  });
+});
+
+describe('grepDocsMulti', () => {
+  test('returns the union of matches across patterns', () => {
+    const matches = grepDocsMulti(index, ['chặn', 'phạm vi']);
+    expect(matches.some((m) => m.line.includes('chặn'))).toBe(true);
+    expect(matches.some((m) => m.line.includes('phạm vi'))).toBe(true);
+  });
+
+  test('dedupes a line matched by more than one pattern', () => {
+    const matches = grepDocsMulti(index, ['verification', 'gate']);
+    const keys = matches.map((m) => `${m.docId}:${m.lineNumber}`);
+    expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  test('a single-pattern call matches grepDocs', () => {
+    expect(grepDocsMulti(index, ['verification gate'])).toEqual(grepDocs(index, 'verification gate'));
+  });
+
+  test('preserves source-priority ranking across patterns', () => {
+    const matches = grepDocsMulti(index, ['verification gate']);
+    const firstTemplate = matches.findIndex((m) => m.contentType === 'template_doc');
+    const firstLecture = matches.findIndex((m) => m.contentType === 'lecture');
+    expect(firstTemplate).toBeGreaterThan(firstLecture);
+  });
+
+  test('returns empty array for no patterns', () => {
+    expect(grepDocsMulti(index, [])).toEqual([]);
   });
 });
 

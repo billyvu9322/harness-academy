@@ -2,7 +2,5 @@
   "name": "harness",
   "private": true,
   "packageManager": "pnpm@10.12.4",
-  "scripts": {
-    "install": "cd templates/automation-test-harness-experimental && npm install && cd assistants && npm install && cd academy && npm install"
-  }
+  "scripts": {}
 }

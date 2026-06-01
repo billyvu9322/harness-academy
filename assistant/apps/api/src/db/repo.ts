@@ -3,9 +3,10 @@ import type { Citation } from '@assistant/shared/citations';
 import type { Suggestion } from '@assistant/shared/suggestions';
 import type { ChatMessage, ConversationSummary } from '@assistant/shared/chat';
 import { db } from './client';
-import { conversations, messages } from './schema';
+import { conversations, messages, chatTraces, userFeedback } from './schema';
 import { toConversationSummary, toMessageDto } from './mappers';
 import type { HistoryTurn } from '../agent/history';
+import type { TraceSummary } from '../observability/trace';
 
 export function deriveTitle(message: string): string {
   const t = message.trim().replace(/\s+/g, ' ');
@@ -68,4 +69,33 @@ export async function appendMessage(input: AppendMessageInput): Promise<string> 
     .returning({ id: messages.id });
   await db.update(conversations).set({ updatedAt: new Date() }).where(eq(conversations.id, input.conversationId));
   return row!.id;
+}
+
+export async function insertTrace(args: {
+  conversationId: string;
+  messageId?: string;
+  summary: TraceSummary;
+}): Promise<void> {
+  const { conversationId, messageId, summary } = args;
+  await db.insert(chatTraces).values({
+    conversationId,
+    messageId: messageId ?? null,
+    intent: summary.intent ?? null,
+    accessedDocsJson: summary.accessedDocs,
+    toolCallsJson: summary.toolCalls,
+    citationCount: summary.citationCount,
+    latencyMs: summary.latencyMs,
+    status: summary.status,
+    errorSummary: summary.errorSummary ?? null,
+    regenerated: summary.regenerated,
+  });
+}
+
+export async function messageExists(id: string): Promise<boolean> {
+  const rows = await db.select({ id: messages.id }).from(messages).where(eq(messages.id, id)).limit(1);
+  return rows.length > 0;
+}
+
+export async function insertFeedback(messageId: string, vote: 'up' | 'down'): Promise<void> {
+  await db.insert(userFeedback).values({ messageId, vote });
 }

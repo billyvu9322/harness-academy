@@ -1,15 +1,31 @@
-services:
-  postgres:
-    image: pgvector/pgvector:pg17
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: harness_assistant
-    ports:
-      # Host 5433 (5432 may be taken by another project); container stays 5432.
-      - "5433:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+name: ${SERVICE_NAME:-harness-assistant}
 
-volumes:
-  postgres_data:
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-5001}
+      # Bundled corpus path inside the image (see Dockerfile + scripts/sync-corpus.mjs).
+      DOCS_ROOT: /app/corpus
+      # Postgres already runs on the VM host. Point DATABASE_URL at it via host.docker.internal
+      # (resolved by extra_hosts below), e.g.
+      #   postgres://user:pass@host.docker.internal:5432/harness_assistant
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      # LLM router (OpenAI-compatible).
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://9router.nimo.io.vn/v1}
+      LLM_API_KEY: ${LLM_API_KEY:?LLM_API_KEY is required}
+      OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-cx/gpt-5.5}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      # CORS: standalone web origin + extra origins (e.g. the academy site embedding the widget),
+      # comma-separated. The academy origin MUST be listed for the widget to call the API.
+      WEB_ORIGIN: ${WEB_ORIGIN:?WEB_ORIGIN is required}
+      WEB_ORIGINS: ${WEB_ORIGINS:-}
+    extra_hosts:
+      # Linux: lets host.docker.internal resolve to the VM host IP (where Postgres runs).
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${PORT:-5001}:${PORT:-5001}"
+    restart: unless-stopped

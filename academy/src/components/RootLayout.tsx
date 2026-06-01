@@ -2,6 +2,7 @@ import { type ReactNode, useEffect } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useUIStore } from "@/store/uiStore";
 import { SidebarNav } from "./SidebarNav";
+import { AskAssistantButton } from "./AskAssistantButton";
 
 const navItems = [
   { to: "/", label: "Trang chủ" },
@@ -65,6 +66,7 @@ export function RootLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <AskAssistantButton />
             <button
               type="button"
               onClick={toggleTheme}

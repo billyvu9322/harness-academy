@@ -2,6 +2,7 @@ import { Fragment, type ReactNode } from 'react';
 import type { Citation } from '@assistant/shared/citations';
 import { UserMessage } from './UserMessage';
 import { AssistantMessage } from './AssistantMessage';
+import type { TimelineStep } from '../../features/chat/agentEvent';
 
 export type Turn =
   | { id: string; role: 'user'; text: string }
@@ -11,6 +12,16 @@ export type Turn =
       body: ReactNode;
       related?: Citation[];
       showFeedback?: boolean;
+      /** Live docs-access/tool status while streaming; null when finished (U4). */
+      status?: string | null;
+      /** Server-assigned message id, captured from the stream; required to submit feedback (U6). */
+      serverMessageId?: string;
+      /** Live agent timeline accumulated from the stream (U7); absent on restored turns. */
+      timeline?: TimelineStep[];
+      /** True once the turn has finished, collapsing the timeline to a summary (U7). */
+      timelineDone?: boolean;
+      /** Wall-clock duration of the turn in ms, used for the "Done in Ns" summary (U7). */
+      timelineDurationMs?: number;
     };
 
 interface MessageThreadProps {
@@ -35,9 +46,14 @@ export function MessageThread({ turns, onVote }: MessageThreadProps) {
             ) : (
               <AssistantMessage
                 id={turn.id}
+                serverMessageId={turn.serverMessageId}
                 body={turn.body}
                 related={turn.related}
                 showFeedback={turn.showFeedback}
+                status={turn.status}
+                timeline={turn.timeline}
+                timelineDone={turn.timelineDone}
+                timelineDurationMs={turn.timelineDurationMs}
                 animationDelay={delayFor(index)}
                 onVote={onVote}
               />

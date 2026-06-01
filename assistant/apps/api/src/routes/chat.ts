@@ -1,91 +1,208 @@
-import type { FastifyPluginAsync } from 'fastify';
-import { chatRequestSchema } from '@assistant/shared/chat';
-import type { Citation } from '@assistant/shared/citations';
-import type { Suggestion } from '@assistant/shared/suggestions';
-import { assistant } from '../agent/runtime';
-import { streamAssistant } from '../agent/streaming';
-import { serializeSseEvent } from '../rag/placeholder';
-import { env } from '../config/env';
+import type { FastifyPluginAsync } from "fastify";
+import { chatRequestSchema, feedbackSchema } from "@assistant/shared/chat";
+import type { Citation } from "@assistant/shared/citations";
+import type { Suggestion } from "@assistant/shared/suggestions";
+import { assistant } from "../agent/runtime";
+import { streamAssistant } from "../agent/streaming";
+import { createAssistantContext } from "../agent/context";
+import { buildTraceSummary } from "../observability/trace";
+import { buildCitations } from "../docs/citations";
+import { serializeSseEvent } from "../rag/placeholder";
+import { env } from "../config/env";
+import { isOriginAllowed, parseAllowedOrigins } from "../config/origins";
 import {
   appendMessage,
   conversationExists,
   createConversation,
   deriveTitle,
   getHistoryTurns,
-} from '../db/repo';
+  insertFeedback,
+  insertTrace,
+  messageExists,
+} from "../db/repo";
 
-/** Resolve the conversation: use the given id if it exists, else create a new one. */
-async function resolveConversation(conversationId: string | undefined, message: string): Promise<string> {
-  if (conversationId && (await conversationExists(conversationId))) return conversationId;
+async function resolveConversation(
+  conversationId: string | undefined,
+  message: string,
+): Promise<string> {
+  if (conversationId && (await conversationExists(conversationId)))
+    return conversationId;
   return createConversation(deriveTitle(message));
 }
 
 export const chatRoute: FastifyPluginAsync = async (app) => {
-  // Non-stream answer (B3). Persists the turn and returns the conversation id (B5).
-  app.post('/api/chat/message', async (request, reply) => {
+  // Non-stream answer + persistence + regenerate-once + trace (B3/B5/B6).
+  app.post("/api/chat/message", async (request, reply) => {
     const parsed = chatRequestSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.code(400).send({ error: 'invalid_request', issues: parsed.error.issues });
+      return reply
+        .code(400)
+        .send({ error: "invalid_request", issues: parsed.error.issues });
     }
     const { message, conversationId: reqId } = parsed.data;
     const conversationId = await resolveConversation(reqId, message);
+    const startedAt = Date.now();
 
     try {
       const history = await getHistoryTurns(conversationId);
-      await appendMessage({ conversationId, role: 'user', content: message });
-      const { answer, citations } = await assistant.runMessage(message, {
-        userLanguage: 'Vietnamese',
+      await appendMessage({ conversationId, role: "user", content: message });
+      const result = await assistant.runMessage(message, {
+        userLanguage: "Vietnamese",
         history,
       });
-      await appendMessage({ conversationId, role: 'assistant', content: answer, citations });
-      return reply.send({ conversationId, answer, citations });
+      const messageId = await appendMessage({
+        conversationId,
+        role: "assistant",
+        content: result.answer,
+        citations: result.citations,
+      });
+      await insertTrace({
+        conversationId,
+        messageId,
+        summary: buildTraceSummary({
+          context: result.context,
+          latencyMs: result.latencyMs,
+          status: "ok",
+          regenerated: result.regenerated,
+        }),
+      });
+      return reply.send({
+        conversationId,
+        messageId,
+        answer: result.answer,
+        citations: result.citations,
+      });
     } catch (err) {
-      request.log.error({ err }, 'assistant runMessage failed');
+      request.log.error({ err }, "assistant runMessage failed");
+      await insertTrace({
+        conversationId,
+        summary: buildTraceSummary({
+          context: createAssistantContext(),
+          latencyMs: Date.now() - startedAt,
+          status: "error",
+          regenerated: false,
+          error: err instanceof Error ? err.message : "unknown error",
+        }),
+      });
       return reply.code(422).send({
-        error: 'assistant_error',
-        message: err instanceof Error ? err.message : 'unknown error',
+        error: "assistant_error",
+        message: err instanceof Error ? err.message : "unknown error",
       });
     }
   });
 
-  // Streaming SSE (B4) + persistence (B5). Conversation id returned via X-Conversation-Id header.
-  app.post('/api/chat/stream', async (request, reply) => {
+  // Streaming SSE + persistence + trace.
+  app.post("/api/chat/stream", async (request, reply) => {
     const parsed = chatRequestSchema.safeParse(request.body);
     if (!parsed.success) {
-      return reply.code(400).send({ error: 'invalid_request', issues: parsed.error.issues });
+      return reply
+        .code(400)
+        .send({ error: "invalid_request", issues: parsed.error.issues });
     }
     const { message, conversationId: reqId } = parsed.data;
     const conversationId = await resolveConversation(reqId, message);
     const history = await getHistoryTurns(conversationId);
-    await appendMessage({ conversationId, role: 'user', content: message });
+    await appendMessage({ conversationId, role: "user", content: message });
+
+    const context = createAssistantContext({ userLanguage: "Vietnamese" });
+    const startedAt = Date.now();
+
+    // reply.hijack() bypasses the @fastify/cors plugin, so the SSE response must set CORS
+    // headers itself — reflecting the request origin when it is in the allowlist (the academy
+    // widget and the standalone web app are different origins).
+    const reqOrigin = request.headers.origin;
+    const allowedOrigins = parseAllowedOrigins(env.WEB_ORIGINS, env.WEB_ORIGIN);
+    const allowOrigin =
+      reqOrigin && isOriginAllowed(reqOrigin, allowedOrigins) ? reqOrigin : env.WEB_ORIGIN;
 
     reply.hijack();
     reply.raw.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'Access-Control-Allow-Origin': env.WEB_ORIGIN,
-      'Access-Control-Expose-Headers': 'X-Conversation-Id',
-      'X-Conversation-Id': conversationId,
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": allowOrigin,
+      "Access-Control-Expose-Headers": "X-Conversation-Id",
+      "X-Conversation-Id": conversationId,
     });
 
-    let answer = '';
+    let answer = "";
     const citations: Citation[] = [];
     const suggestions: Suggestion[] = [];
     try {
-      for await (const ev of streamAssistant(message, { userLanguage: 'Vietnamese', history })) {
-        if (ev.type === 'message.delta') answer += ev.delta;
-        else if (ev.type === 'citation') citations.push(ev.citation);
-        else if (ev.type === 'suggestion') suggestions.push(ev.suggestion);
+      for await (const ev of streamAssistant(message, {
+        userLanguage: "Vietnamese",
+        history,
+        context,
+      })) {
+        if (ev.type === "message.delta") answer += ev.delta;
+        else if (ev.type === "citation") citations.push(ev.citation);
+        else if (ev.type === "suggestion") suggestions.push(ev.suggestion);
         reply.raw.write(serializeSseEvent(ev));
       }
-      await appendMessage({ conversationId, role: 'assistant', content: answer, citations, suggestions });
+      const messageId = await appendMessage({
+        conversationId,
+        role: "assistant",
+        content: answer,
+        citations,
+        suggestions,
+      });
+      // The assistant row id only exists once the answer is persisted. Emit it so the client
+      // can target feedback at the stored message (U6). Sent after `done`; the client drains
+      // remaining events until the stream closes.
+      reply.raw.write(
+        serializeSseEvent({
+          type: "assistant_message.related",
+          messageId,
+          items: citations,
+        }),
+      );
+      await insertTrace({
+        conversationId,
+        messageId,
+        summary: buildTraceSummary({
+          context,
+          latencyMs: Date.now() - startedAt,
+          status: "ok",
+          regenerated: false,
+        }),
+      });
     } catch (err) {
-      request.log.error({ err }, 'stream failed');
-      reply.raw.write(serializeSseEvent({ type: 'error', message: 'stream failed' }));
-      reply.raw.write(serializeSseEvent({ type: 'done' }));
+      request.log.error({ err }, "stream failed");
+      reply.raw.write(
+        serializeSseEvent({ type: "error", message: "stream failed" }),
+      );
+      reply.raw.write(serializeSseEvent({ type: "done" }));
+      await insertTrace({
+        conversationId,
+        summary: buildTraceSummary({
+          context,
+          latencyMs: Date.now() - startedAt,
+          status: "error",
+          regenerated: false,
+          error: err instanceof Error ? err.message : "unknown error",
+        }),
+      });
     } finally {
       reply.raw.end();
     }
   });
+
+  // Feedback loop (B6): thumb up/down on an assistant message.
+  app.post<{ Params: { messageId: string } }>(
+    "/api/messages/:messageId/feedback",
+    async (request, reply) => {
+      const parsed = feedbackSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply
+          .code(400)
+          .send({ error: "invalid_request", issues: parsed.error.issues });
+      }
+      const { messageId } = request.params;
+      if (!(await messageExists(messageId))) {
+        return reply.code(404).send({ error: "not_found" });
+      }
+      await insertFeedback(messageId, parsed.data.vote);
+      return reply.send({ ok: true });
+    },
+  );
 };

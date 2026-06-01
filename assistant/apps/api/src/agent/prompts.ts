@@ -1,9 +1,21 @@
+import type { AssistantMode } from './context';
+
 export interface PromptOptions {
   /** Language the final answer must be written in. */
   userLanguage?: string;
+  /** Interaction mode; 'harness-design' unlocks the blueprint workflow. */
+  mode?: AssistantMode;
+  /** Regenerate pass: push a stronger grounding directive. */
+  corrective?: boolean;
 }
 
 const DEFAULT_LANGUAGE = 'Vietnamese';
+
+const DESIGN_LINE =
+  'CHẾ ĐỘ THIẾT KẾ HARNESS: Khi người dùng muốn thiết kế harness cho một workflow, gọi `harness_blueprint` để lấy khung các primitive (feature list, tools, verification gates, loops, orchestrator/sub-agent, clean state), rồi điền từng phần dựa trên tài liệu nội bộ (grep + read trước khi khẳng định).';
+
+const CORRECTIVE_LINE =
+  'LƯU Ý SỬA LỖI: Câu trả lời trước thiếu trích dẫn. Bạn BẮT BUỘC gọi read_doc_section để đọc đoạn liên quan trước khi trả lời, và chỉ khẳng định điều có trong đoạn đã đọc.';
 
 /**
  * System instructions for the Harness Orchestrator. The agent is a focused harness-engineering
@@ -24,5 +36,7 @@ export function buildSystemPrompt(opts: PromptOptions = {}): string {
     '',
     `NGÔN NGỮ: Trả lời bằng ${language}. Giữ nguyên thuật ngữ kỹ thuật tiếng Anh khi phù hợp (vd: AGENTS.md, verification gate, orchestrator).`,
     'Trình bày ngắn gọn, có cấu trúc, đúng trọng tâm câu hỏi.',
+    ...(opts.mode === 'harness-design' ? ['', DESIGN_LINE] : []),
+    ...(opts.corrective ? ['', CORRECTIVE_LINE] : []),
   ].join('\n');
 }

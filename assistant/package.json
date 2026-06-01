@@ -8,11 +8,15 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
+    "eval": "pnpm --filter @assistant/api eval",
     "db:generate": "pnpm --filter @assistant/api db:generate",
-    "db:migrate": "pnpm --filter @assistant/api db:migrate"
+    "db:migrate": "pnpm --filter @assistant/api db:migrate",
+    "sync:corpus": "node scripts/sync-corpus.mjs",
+    "package:zip": "node scripts/sync-corpus.mjs && node scripts/package-deploy.mjs"
   },
   "devDependencies": {
     "turbo": "^2.0.12",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "yazl": "^3.3.1"
   }
 }

@@ -62,7 +62,18 @@ function compile(pattern: string): RegExp {
 
 /** Case-insensitive regex/keyword search over allowlisted doc sections, ranked by source priority. */
 export function grepDocs(index: DocIndex, pattern: string, opts: GrepOptions = {}): GrepMatch[] {
-  const re = compile(pattern);
+  return grepDocsMulti(index, [pattern], opts);
+}
+
+/**
+ * Like `grepDocs` but a line matches if ANY of the patterns hit (logical OR), in one ranked
+ * pass. Used for bilingual recall: the grep tool expands a query into VN+EN variants
+ * (see keywords.ts) and passes them all here. Each line is reported at most once even when
+ * several patterns match it; global source-priority ranking is preserved.
+ */
+export function grepDocsMulti(index: DocIndex, patterns: string[], opts: GrepOptions = {}): GrepMatch[] {
+  if (patterns.length === 0) return [];
+  const res = patterns.map(compile);
   const maxMatches = opts.maxMatches ?? DEFAULT_MAX_MATCHES;
   const scope = opts.contentTypes
     ? index.filter((d) => opts.contentTypes!.includes(d.contentType))
@@ -74,7 +85,7 @@ export function grepDocs(index: DocIndex, pattern: string, opts: GrepOptions = {
     for (const section of entry.sections) {
       const lines = section.text.split('\n');
       lines.forEach((line, i) => {
-        if (!re.test(line)) return;
+        if (!res.some((re) => re.test(line))) return;
         matches.push({
           r,
           m: {

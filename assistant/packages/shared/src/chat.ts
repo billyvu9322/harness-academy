@@ -25,7 +25,12 @@ export const chatMessageSchema = z.object({
   createdAt: z.string(),
 });
 
+export const feedbackSchema = z.object({
+  vote: z.enum(['up', 'down']),
+});
+
 export type ChatMode = z.infer<typeof chatModeSchema>;
 export type ChatRequest = z.infer<typeof chatRequestSchema>;
 export type ConversationSummary = z.infer<typeof conversationSummarySchema>;
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
+export type FeedbackRequest = z.infer<typeof feedbackSchema>;

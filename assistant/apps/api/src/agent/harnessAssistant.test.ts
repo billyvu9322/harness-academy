@@ -13,9 +13,8 @@ describe('createAssistant', () => {
     expect(names).toEqual(expect.arrayContaining(['list_docs', 'grep_docs', 'read_doc_section']));
   });
 
-  test('attaches input and output guardrails', () => {
+  test('attaches an input guardrail (output grounding handled app-level via regenerate)', () => {
     expect(orchestrator.inputGuardrails.length).toBeGreaterThan(0);
-    expect(orchestrator.outputGuardrails.length).toBeGreaterThan(0);
   });
 
   test('exposes a runMessage function', () => {

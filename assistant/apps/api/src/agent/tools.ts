@@ -2,7 +2,9 @@ import { tool } from '@openai/agents';
 import { z } from 'zod';
 import type { DocIndex } from '../docs/index';
 import { listDocs } from '../docs/index';
-import { grepDocs, readDocSection } from '../docs/search';
+import { grepDocsMulti, readDocSection } from '../docs/search';
+import { expandQuery } from '../docs/keywords';
+import { buildHarnessBlueprint } from './blueprint';
 import type { AssistantContext } from './context';
 
 const CONTENT_TYPES = [
@@ -30,7 +32,10 @@ export function createDocsTools(getIndex: () => DocIndex) {
     description:
       'List indexed docs (title, route, content type) and their heading outline. Use first to orient before grepping.',
     parameters: z.object({ contentTypes: contentTypesParam }),
-    execute: async ({ contentTypes }) => listDocs(getIndex(), contentTypes ?? undefined),
+    execute: async ({ contentTypes }, runContext) => {
+      (runContext?.context as AssistantContext | undefined)?.toolCalls?.push('list_docs');
+      return listDocs(getIndex(), contentTypes ?? undefined);
+    },
   });
 
   const grepDocsTool = tool({
@@ -42,8 +47,29 @@ export function createDocsTools(getIndex: () => DocIndex) {
       contentTypes: contentTypesParam,
       maxMatches: z.number().int().min(1).max(40).default(20),
     }),
-    execute: async ({ pattern, contentTypes, maxMatches }) =>
-      grepDocs(getIndex(), pattern, { contentTypes: contentTypes ?? undefined, maxMatches }),
+    execute: async ({ pattern, contentTypes, maxMatches }, runContext) => {
+      (runContext?.context as AssistantContext | undefined)?.toolCalls?.push('grep_docs');
+      // Expand the query into VN+EN variants for cross-lingual recall, then OR-match them.
+      const patterns = expandQuery(pattern);
+      return grepDocsMulti(getIndex(), patterns, { contentTypes: contentTypes ?? undefined, maxMatches });
+    },
+  });
+
+  // harness-design-only: returns the primitive skeleton the agent fills from the corpus.
+  // Gated via isEnabled so it never surfaces during plain Q&A (mode === 'qa').
+  const harnessBlueprintTool = tool({
+    name: 'harness_blueprint',
+    description:
+      'Return the skeleton of harness primitives (goals, feature list, tools, verification gates, loops, orchestrator/sub-agents, clean state) for a workflow, to fill in from the docs. Available only in harness-design mode.',
+    parameters: z.object({
+      workflow: z.string().min(1).describe('The business workflow to design a harness for.'),
+    }),
+    isEnabled: ({ runContext }) =>
+      (runContext?.context as AssistantContext | undefined)?.mode === 'harness-design',
+    execute: async ({ workflow }, runContext) => {
+      (runContext?.context as AssistantContext | undefined)?.toolCalls?.push('harness_blueprint');
+      return buildHarnessBlueprint(workflow);
+    },
   });
 
   const readDocSectionTool = tool({
@@ -55,14 +81,15 @@ export function createDocsTools(getIndex: () => DocIndex) {
       heading: z.string().nullish().describe('Section heading; omit for the whole doc.'),
     }),
     execute: async ({ docId, heading }, runContext) => {
+      const ctx = runContext?.context as AssistantContext | undefined;
+      ctx?.toolCalls?.push('read_doc_section');
       const section = readDocSection(getIndex(), docId, heading ?? undefined);
       if (!section) return { found: false, docId };
       // Record the read for citation provenance (only sections actually read are cited).
-      const ctx = runContext?.context as AssistantContext | undefined;
       ctx?.reads?.push(section);
       return { found: true, ...section };
     },
   });
 
-  return { listDocsTool, grepDocsTool, readDocSectionTool };
+  return { listDocsTool, grepDocsTool, readDocSectionTool, harnessBlueprintTool };
 }
