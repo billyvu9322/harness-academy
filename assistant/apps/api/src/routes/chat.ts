@@ -111,16 +111,17 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
     // headers itself — reflecting the request origin when it is in the allowlist (the academy
     // widget and the standalone web app are different origins).
     const reqOrigin = request.headers.origin;
-    const allowedOrigins = parseAllowedOrigins(env.WEB_ORIGINS, env.WEB_ORIGIN);
+    const allowedOrigins = parseAllowedOrigins(env.WEB_ORIGINS);
     const allowOrigin =
-      reqOrigin && isOriginAllowed(reqOrigin, allowedOrigins) ? reqOrigin : env.WEB_ORIGIN;
+      reqOrigin && isOriginAllowed(reqOrigin, allowedOrigins) ? reqOrigin : allowedOrigins[0];
 
     reply.hijack();
     reply.raw.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
-      "Access-Control-Allow-Origin": allowOrigin,
+      // Reflect the caller's origin when allowed; only set the header if we have one.
+      ...(allowOrigin ? { "Access-Control-Allow-Origin": allowOrigin } : {}),
       "Access-Control-Expose-Headers": "X-Conversation-Id",
       "X-Conversation-Id": conversationId,
     });

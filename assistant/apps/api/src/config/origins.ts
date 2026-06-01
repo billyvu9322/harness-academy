@@ -4,15 +4,15 @@
  */
 
 /**
- * Build the allowed-origin list from an optional comma-separated `WEB_ORIGINS` plus the
- * always-allowed default `WEB_ORIGIN`. Trims, drops empties, dedupes; the default comes last.
+ * Build the allowed-origin list from the comma-separated `WEB_ORIGINS`.
+ * Trims, drops empties, dedupes.
  */
-export function parseAllowedOrigins(webOrigins: string | undefined, webOrigin: string): string[] {
+export function parseAllowedOrigins(webOrigins: string | undefined): string[] {
   const fromList = (webOrigins ?? '')
     .split(',')
     .map((o) => o.trim())
     .filter((o) => o.length > 0);
-  return [...new Set([...fromList, webOrigin])];
+  return [...new Set(fromList)];
 }
 
 /**

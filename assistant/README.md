@@ -36,8 +36,7 @@ cp .env.example .env      # then fill in the values (see table below)
 | `DATABASE_URL` | ✅ | `postgres://postgres:postgres@localhost:5432/harness_assistant` | api | Postgres connection |
 | `DOCS_ROOT` | | repo root | api | Where the indexable corpus lives (set to `/app/corpus` in the image) |
 | `PORT` | | `3001` (local) / `5001` (compose) | api | HTTP port |
-| `WEB_ORIGIN` | ✅ (prod) | `http://localhost:5174` | api | Default allowed CORS origin |
-| `WEB_ORIGINS` | | — | api | Extra allowed CORS origins (comma-separated), e.g. the academy site |
+| `WEB_ORIGINS` | ✅ (prod) | `http://localhost:5173,http://localhost:5174` | api | CORS allowlist (comma-separated). The academy site origin must be listed |
 | `VITE_API_BASE_URL` | | `http://localhost:3001` | web | API URL baked into the standalone web app |
 | `VITE_ACADEMY_BASE_URL` | | `http://localhost:5173` | web | Academy base for citation links |
 
@@ -107,7 +106,7 @@ pnpm package:zip
 
 ```bash
 unzip assistant-harness.zip -d harness-assistant && cd harness-assistant
-cp .env.example .env        # fill in: LLM_API_KEY, DATABASE_URL, WEB_ORIGIN, WEB_ORIGINS, PORT
+cp .env.example .env        # fill in: LLM_API_KEY, DATABASE_URL, WEB_ORIGINS, PORT
 docker compose up -d --build
 docker compose run --rm app pnpm --filter @assistant/api db:migrate   # first deploy only
 docker compose logs -f app
@@ -119,8 +118,8 @@ docker compose logs -f app
   `host.docker.internal` (resolved by `extra_hosts` in the compose file), e.g.
   `postgres://user:pass@host.docker.internal:5432/harness_assistant`. Create the
   `harness_assistant` database first.
-- **CORS**: set `WEB_ORIGIN` (and/or `WEB_ORIGINS`) to the **browser origin of the academy site**,
-  otherwise the embedded widget's requests are blocked by the browser.
+- **CORS**: set `WEB_ORIGINS` (comma-separated) to include the **browser origin of the academy
+  site**, otherwise the embedded widget's requests are blocked by the browser.
 - **Corpus**: bundled into the image at `/app/corpus` (via `pnpm sync:corpus`, which runs inside
   `package:zip`). `DOCS_ROOT=/app/corpus` is set in the image. Re-package to refresh content.
 - **Port**: `PORT` (compose default `5001`) maps host→container 1:1.

@@ -19,10 +19,9 @@ services:
       LLM_API_KEY: ${LLM_API_KEY:?LLM_API_KEY is required}
       OPENAI_CHAT_MODEL: ${OPENAI_CHAT_MODEL:-cx/gpt-5.5}
       OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
-      # CORS: standalone web origin + extra origins (e.g. the academy site embedding the widget),
-      # comma-separated. The academy origin MUST be listed for the widget to call the API.
-      WEB_ORIGIN: ${WEB_ORIGIN:?WEB_ORIGIN is required}
-      WEB_ORIGINS: ${WEB_ORIGINS:-}
+      # CORS allowlist (comma-separated). The academy site origin (that embeds the widget) MUST
+      # be listed, otherwise the browser blocks the widget's requests.
+      WEB_ORIGINS: ${WEB_ORIGINS:?WEB_ORIGINS is required (comma-separated allowed origins)}
     extra_hosts:
       # Linux: lets host.docker.internal resolve to the VM host IP (where Postgres runs).
       - "host.docker.internal:host-gateway"

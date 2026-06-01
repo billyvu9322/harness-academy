@@ -11,7 +11,7 @@ export async function buildApp() {
   initLlm();
   const app = Fastify({ logger: true });
 
-  const allowedOrigins = parseAllowedOrigins(env.WEB_ORIGINS, env.WEB_ORIGIN);
+  const allowedOrigins = parseAllowedOrigins(env.WEB_ORIGINS);
   await app.register(cors, {
     origin: (origin, cb) => cb(null, isOriginAllowed(origin ?? undefined, allowedOrigins)),
   });
