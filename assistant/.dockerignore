@@ -5,9 +5,6 @@ dist
 .turbo
 **/.turbo
 **/dist-widget
-.env
-.env.*
-!.env.example
 postgres-data
 assistant-harness.zip
 *.log

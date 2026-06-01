@@ -17,19 +17,10 @@ const EXCLUDED_SEGMENTS = new Set([
   "postgres-data",
 ]);
 
-// Never ship secrets in the deploy artifact. The operator creates .env on the VM from
-// .env.example (Docker Compose reads it for variable substitution).
-function isSecretFile(normalized) {
-  const name = normalized.split("/").pop() ?? "";
-  if (name === ".env.example") return false;
-  return name === ".env" || name.startsWith(".env.");
-}
-
 export function shouldIncludePath(relativePath) {
   const normalized = relativePath.split(path.sep).join("/");
   if (!normalized || normalized === DEPLOY_ZIP_NAME) return false;
   if (normalized.endsWith(".log")) return false;
-  if (isSecretFile(normalized)) return false;
   return !normalized
     .split("/")
     .some((segment) => EXCLUDED_SEGMENTS.has(segment));
@@ -87,10 +78,15 @@ export async function createDeployZip(
   return { zipPath, files: files.length, size };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   const result = await createDeployZip();
   console.log(`Created ${result.zipPath}`);
   console.log(`Files: ${result.files}`);
   console.log(`Size: ${result.size} bytes`);
-  console.log("Note: .env is excluded — create it on the VM from .env.example.");
+  console.log(
+    "Note: .env is excluded — create it on the VM from .env.example.",
+  );
 }
