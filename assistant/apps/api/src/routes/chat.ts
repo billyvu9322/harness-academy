@@ -6,9 +6,7 @@ import { assistant } from "../agent/runtime";
 import { streamAssistant } from "../agent/streaming";
 import { createAssistantContext } from "../agent/context";
 import { buildTraceSummary } from "../observability/trace";
-import { buildCitations } from "../docs/citations";
 import { serializeSseEvent } from "../rag/placeholder";
-import { env } from "../config/env";
 import { isOriginAllowed, parseAllowedOrigins } from "../config/origins";
 import {
   appendMessage,
@@ -20,6 +18,7 @@ import {
   insertTrace,
   messageExists,
 } from "../db/repo";
+import { env } from "../config/env";
 
 async function resolveConversation(
   conversationId: string | undefined,

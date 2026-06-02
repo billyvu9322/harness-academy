@@ -1,0 +1,61 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - paragraph [ref=e6]: Widget Dev
+    - heading "Harness Assistant Widget Sandbox" [level=1] [ref=e7]
+    - paragraph [ref=e8]:
+      - text: Trang nay mount thang
+      - code [ref=e9]: <harness-assistant />
+      - text: de debug button, modal, shadow DOM, va chat UI ma khong can academy.
+  - generic [ref=e10]:
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - paragraph [ref=e13]: Host element
+        - paragraph [ref=e14]: Mo widget tu button render ben trong custom element.
+      - generic [ref=e28]:
+        - button "Ask Assistant" [ref=e30] [cursor=pointer]:
+          - img [ref=e31]
+          - text: Ask Assistant
+        - dialog [ref=e33]:
+          - main [ref=e34]:
+            - generic [ref=e35]:
+              - generic [ref=e36]:
+                - generic [ref=e37]: auto_awesome
+                - text: Assistant
+              - generic [ref=e38]:
+                - button [ref=e39] [cursor=pointer]: open_in_new
+                - button [ref=e40] [cursor=pointer]: history
+                - button [ref=e41] [cursor=pointer]: close
+            - generic [ref=e42]: "Đang hỏi về: Harness Assistant Widget Sandbox"
+            - generic [ref=e44]:
+              - img [ref=e47]
+              - generic [ref=e50]:
+                - textbox [ref=e51]:
+                  - /placeholder: What would you like to know?
+                  - text: "Trong bài \"Harness Assistant Widget Sandbox\":"
+                - button [ref=e52] [cursor=pointer]:
+                  - generic [ref=e53]: arrow_right_alt
+              - generic [ref=e54]:
+                - generic [ref=e55]: "Examples:"
+                - generic [ref=e56]:
+                  - button [ref=e57] [cursor=pointer]: AGENTS.md
+                  - button [ref=e58] [cursor=pointer]: State Mgmt
+                  - button [ref=e59] [cursor=pointer]: Verification
+                  - button [ref=e60] [cursor=pointer]: Init Phase
+                - generic [ref=e61]:
+                  - paragraph [ref=e62] [cursor=pointer]: What is a harness and why does it matter for AI agents?
+                  - paragraph [ref=e63] [cursor=pointer]: How do I design init.sh for multi-session continuity?
+                  - paragraph [ref=e64] [cursor=pointer]: What's the difference between feature_list.json and AGENTS.md?
+            - paragraph [ref=e66]: Forge Terminal Environment v1.4.2 — Encrypted AI Core Active
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - paragraph [ref=e17]: Gia lap context
+        - list [ref=e18]:
+          - listitem [ref=e19]: "API: http://localhost:3001"
+          - listitem [ref=e20]: "Route: /widget-dev"
+          - listitem [ref=e21]: "Title: Harness Assistant Widget Sandbox"
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: Checklist
+        - list [ref=e24]:
+          - listitem [ref=e25]: Button co render trong Shadow DOM khong
+          - listitem [ref=e26]: Click co mo modal chat khong
+          - listitem [ref=e27]: Context chip co hien title dung khong

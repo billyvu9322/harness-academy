@@ -21,6 +21,21 @@ describe('parseWidgetConfig', () => {
     });
   });
 
+  it('reads data-* attributes used by academy host element', () => {
+    const cfg = parseWidgetConfig(
+      el({
+        'data-api-base-url': 'https://api.example.com',
+        'data-academy-route': '/skills/context-engineering',
+        'data-academy-title': 'Context Engineering',
+      }),
+    );
+    expect(cfg).toEqual({
+      apiBaseUrl: 'https://api.example.com',
+      academyRoute: '/skills/context-engineering',
+      academyTitle: 'Context Engineering',
+    });
+  });
+
   it('returns undefined for missing attributes', () => {
     expect(parseWidgetConfig(el({}))).toEqual({});
   });

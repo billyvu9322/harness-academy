@@ -105,10 +105,10 @@ pnpm package:zip
 ### 4.2 On the VM
 
 ```bash
-unzip assistant-harness.zip -d harness-assistant && cd harness-assistant
-cp .env.example .env        # fill in: LLM_API_KEY, DATABASE_URL, WEB_ORIGINS, PORT
-docker compose up -d --build
-docker compose run --rm app pnpm --filter @assistant/api db:migrate   # first deploy only
+rm -r assistant-harness
+unzip assistant-harness.zip -d assistant-harness && cd assistant-harness
+docker compose --env-file .env.production up -d --build
+docker compose --env-file .env.production run --rm app pnpm --filter @assistant/api db:migrate  
 docker compose logs -f app
 ```
 

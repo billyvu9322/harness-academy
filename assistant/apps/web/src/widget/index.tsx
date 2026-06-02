@@ -34,7 +34,7 @@ class HarnessAssistantElement extends HTMLElement {
   private mountPoint: HTMLDivElement | null = null;
 
   static get observedAttributes(): string[] {
-    return ['open', 'api-base-url', 'academy-route', 'academy-title'];
+    return ['data-api-base-url', 'data-academy-route', 'data-academy-title'];
   }
 
   connectedCallback(): void {
@@ -67,10 +67,9 @@ class HarnessAssistantElement extends HTMLElement {
     if (!this.root) return;
     const config = parseWidgetConfig(this);
     if (config.apiBaseUrl) setApiBaseUrl(config.apiBaseUrl);
-    const open = this.hasAttribute('open');
     this.root.render(
       <StrictMode>
-        <WidgetApp config={config} open={open} onClose={() => this.removeAttribute('open')} />
+        <WidgetApp config={config} />
       </StrictMode>,
     );
   }

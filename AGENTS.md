@@ -1,62 +1,89 @@
 # Agent Instructions
 
+## Read First
+
+- Root `AGENTS.md` is canonical workspace guide. `CLAUDE.md` adds corrections and subtree notes; use both.
+- Main seminar artifact: `AI-Agent-Harness.md`. Keep it framework-agnostic unless user explicitly asks for vendor-specific material.
+- Sourced research notes: `docs/OpenAI-Harness-Engineering.md`, `docs/Harness-Template-Flow.md`, `docs/Awesome-Harness-Engineering-Flow.md`. Preserve source URLs and snapshot dates.
+
 ## Repo Shape
 
-- Root is a harness-engineering seminar/research workspace. There is no root `README`, root package manifest, root lockfile, CI, or root test config.
-- Runnable projects live under subdirectories. Run commands from the project directory that owns the manifest/config.
-- Do not invent root build, lint, test, or dev-server commands. Root verification is usually targeted Markdown/source checks with `grep`, `read`, and browser/web research.
+- Root has `package.json` and `pnpm-lock.yaml`, but no root scripts, CI, or app entrypoint. Do not invent root `build`, `test`, or `dev` commands.
+- Run commands from subtree owning manifest/config.
+- Main runnable subtrees:
+  - `academy/` — Vite + React site for academy content.
+  - `assistant/` — pnpm workspace / Turborepo (`apps/api`, `apps/web`, `packages/shared`).
+  - `templates/automation-test-harness-experimental/` — Playwright sample harness. Treat local `AGENTS.md` there as authoritative inside subtree.
 
-## Main Files
+## Academy
 
-- `AI-Agent-Harness.md`: primary seminar document. Keep it framework-agnostic unless the user explicitly asks for a vendor-specific section.
-- `docs/OpenAI-Harness-Engineering.md`: sourced notes on OpenAI's harness engineering article plus related Codex docs. Snapshot date: 2026-05-31.
-- `docs/Harness-Template-Flow.md`: notes from `hoangnb24/harness-experimental`; use for repo harness template, intake, risk lanes, context routing, trace/friction capture.
-- `docs/Awesome-Harness-Engineering-Flow.md`: notes from `walkinglabs/awesome-harness-engineering`; use for field map, reliability loop, benchmarks, evals/observability framing.
-- `academy/`: React/Vite site for Vietnamese Harness Academy content.
-- `samples/automation-test-harness-experimental/`: sample Playwright automation-test harness with its own `AGENTS.md`.
-- `.playwright-mcp/`: browser-tool artifacts from research. Treat as generated evidence, not source prose.
+- Work from `academy/`.
+- Commands: `pnpm dev`, `pnpm build`, `pnpm preview`, `pnpm lint`.
+- `pnpm lint` is only `tsc --noEmit`; no ESLint configured.
+- Content loader: `academy/src/content/index.ts` uses raw `import.meta.glob` over `academy/content/{lectures,projects,skills,references}`.
+- New content needs frontmatter at least: `title`, `description`, `order`, `duration`, `tags`.
+- New content section also needs manual route wiring in `academy/src/router.tsx`; markdown alone not enough.
+- If sidebar misses new content, restart dev server.
 
-## Academy App
+## Assistant
 
-- Work from `academy/` for app commands.
-- Commands from `academy/package.json`: `pnpm dev`, `pnpm build`, `pnpm preview`, `pnpm lint`.
-- `pnpm lint` is TypeScript only: `tsc --noEmit`.
-- Both `pnpm-lock.yaml` and `yarn.lock` exist; README documents `pnpm install` or `npm install`. Prefer `pnpm` when adding examples because README uses it first.
-- Content lives in `academy/content/{lectures,projects,skills,references}` and is auto-loaded by `academy/src/content/index.ts` via Vite `import.meta.glob` raw Markdown imports.
-- Adding academy content requires frontmatter with at least `title`, `description`, `order`, `duration`, and `tags`; restart dev server if sidebar does not update.
-- Routes are manual in `academy/src/router.tsx`; new content sections need route and collection wiring, not only Markdown files.
-- Vite aliases: `@` -> `academy/src`, `@content` -> `academy/content`.
+- Work from `assistant/`.
+- Install/toolchain: Node 22+, `pnpm@10.12.4`.
+- Workspace packages from `pnpm-workspace.yaml`: `apps/*`, `packages/*`.
+- Root scripts: `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm test`, `pnpm typecheck`, `pnpm eval`, `pnpm db:generate`, `pnpm db:migrate`, `pnpm sync:corpus`, `pnpm package:zip`.
+- `turbo run dev --parallel` starts both API and web. Build/lint/typecheck/test all flow through Turbo.
+- `packages/shared` is source of truth for API/web contracts. Change shared Zod schema first, then api/web consumers.
+- `apps/web` tests are placeholder only: `test` prints `No tests in web scaffold yet`.
+- `packages/shared` tests are placeholder only: `test` prints `No tests in shared yet`.
+- API eval command reads env explicitly: `node --env-file=../../.env --import tsx src/evals/runEvals.ts`.
+- API scripts outside server startup expect `assistant/.env`; do not move env assumptions casually.
 
-## Sample Harness
+## Assistant Architecture
 
-- Treat `samples/automation-test-harness-experimental/AGENTS.md` as authoritative inside that subtree.
-- Commands from sample `package.json`: `npm test`, `npm run test:auth`, `npm run report`, `npm run harness:intake`, `npm run harness:trace`.
-- Focused Playwright command: `npx playwright test <test-file> --trace=on` from `samples/automation-test-harness-experimental/`.
-- Playwright uses `E2E_BASE_URL` or defaults to `http://localhost:3000`; no app server is defined in the sample.
-- Harness CLI writes JSONL records to `samples/automation-test-harness-experimental/.harness/records.jsonl`.
+- `assistant/apps/api` = Fastify API + agent harness.
+- `assistant/apps/web` = React chat UI + embeddable widget.
+- `assistant/packages/shared` = shared contracts.
+- Request flow worth preserving when editing:
+  - web posts SSE chat request
+  - `apps/api/src/routes/chat.ts` validates, loads history, persists messages, streams events
+  - `apps/api/src/agent/streaming.ts` runs orchestrator and maps SDK events to typed SSE
+  - docs access goes through allowlisted docs tools only
+- Grounding invariant: citations come from sections actually read via docs tools (`context.reads`), not model claims.
+- Do not add raw filesystem/shell access to model-facing tools.
 
-## Content Rules
+## Assistant Ops
 
-- Keep `AI-Agent-Harness.md` focused on harness approach, flow, and contents, not SDK tutorials.
-- Do not reintroduce OpenAI Agents SDK code/examples unless the user asks for SDK-specific material.
-- Keep feature tracking inside `AGENTS.md`, `CLAUDE.md`, or `GEMINI.md`; do not create `feature_list.json`.
-- Prefer sourced facts over inference. Label inference when summarizing what OpenAI's approach implies.
-- Preserve source URLs and snapshot dates in research notes.
+- Local dev flow from `assistant/README.md`: start Postgres, run `pnpm db:migrate`, then `pnpm dev`.
+- Local Postgres example in README maps host `5432 -> 5432` with container name `harness-pg`.
+- Production compose in `assistant/docker-compose.yml` is API-only; expects Postgres already running on VM host via `host.docker.internal`.
+- `pnpm package:zip` first runs `sync-corpus`; deploy zip depends on generated `assistant/corpus/`.
+- `assistant/scripts/sync-corpus.mjs` copies repo-root corpus inputs, including `templates/automation-test-harness-experimental/*`. If those paths move, update sync script and docs allowlist together.
+- Widget build is separate from API deploy: `pnpm --filter @assistant/web build:widget` outputs `apps/web/dist-widget/assistant-widget.js` and copies it into `academy/public/`.
+
+## Template Harness
+
+- Real path is `templates/automation-test-harness-experimental/`, not `samples/`.
+- Commands: `npm test`, `npm run test:auth`, `npm run report`, `npm run harness:intake`, `npm run harness:trace`.
+- Focused Playwright run: `npx playwright test <test-file> --trace=on`.
+- Base URL: `E2E_BASE_URL` or default `http://localhost:3000`; sample does not define app server.
+- Evidence/output file: `.harness/records.jsonl`.
+- Local subtree rule matters: scenario plan comes before test code; do not weaken assertions or patch failures with arbitrary sleeps.
+
+## Content And Research Rules
+
+- Do not reintroduce OpenAI Agents SDK examples into `AI-Agent-Harness.md` unless user asks for SDK-specific section.
+- Prefer executable/config truth over prose when conflicts appear.
+- Prefer sourced facts over inference; label inference clearly.
+- Keep feature tracking in instruction files if needed; do not create `feature_list.json`.
 
 ## Research Gotchas
 
-- `https://openai.com/index/harness-engineering/` returned 403 via `webfetch`; browser automation was able to read it.
-- For OpenAI/Codex docs, prefer `openaiDeveloperDocs_*` tools when available, then browser/webfetch as fallback.
-- When researching pages with diagrams, inspect image `alt` text; OpenAI's article diagrams contain important implementation details.
+- `https://openai.com/index/harness-engineering/` returned 403 via `webfetch`; browser automation worked.
+- For OpenAI/Codex docs, prefer `openaiDeveloperDocs_*` tools first.
+- OpenAI article diagrams contain important `alt` text; inspect it when summarizing implementation details.
 
-## Verification Patterns
+## Verification
 
-- After edits, run focused grep checks for removed or required terms. Example: `OpenAI|SDK|@openai|agents-js|Sandbox Agent|feature_list` when keeping the main doc runtime-agnostic.
-- For research notes, verify key terms exist rather than claiming completeness from memory.
-- If a PowerPoint is requested, verify the `.pptx` exists before referencing it. No `.pptx` is currently present in this directory.
-
-## Style
-
-- Keep files concise, seminar-ready, and practical.
-- Use Markdown headings and short bullets.
-- Avoid generic agent advice unless it is tied to this workspace's harness-engineering content.
+- For main seminar doc edits, grep for terms that should stay out when keeping it runtime-agnostic: `OpenAI|SDK|@openai|agents-js|Sandbox Agent|feature_list`.
+- Verify referenced files exist before claiming them. Current repo has no `.pptx`.
+- Root-level verification is usually targeted file reads/greps, not repo-wide test runs.

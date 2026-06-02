@@ -1,0 +1,25 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - paragraph [ref=e6]: Widget Dev
+    - heading "Harness Assistant Widget Sandbox" [level=1] [ref=e7]
+    - paragraph [ref=e8]:
+      - text: Trang nay mount thang
+      - code [ref=e9]: <harness-assistant />
+      - text: de debug button, modal, shadow DOM, va chat UI ma khong can academy.
+  - generic [ref=e10]:
+    - generic [ref=e12]:
+      - paragraph [ref=e13]: Host element
+      - paragraph [ref=e14]: Mo widget tu button render ben trong custom element.
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - paragraph [ref=e17]: Gia lap context
+        - list [ref=e18]:
+          - listitem [ref=e19]: "API: http://localhost:3001"
+          - listitem [ref=e20]: "Route: /widget-dev"
+          - listitem [ref=e21]: "Title: Harness Assistant Widget Sandbox"
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: Checklist
+        - list [ref=e24]:
+          - listitem [ref=e25]: Button co render trong Shadow DOM khong
+          - listitem [ref=e26]: Click co mo modal chat khong
+          - listitem [ref=e27]: Context chip co hien title dung khong

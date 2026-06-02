@@ -2,7 +2,18 @@ import { type ReactNode, useEffect } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useUIStore } from "@/store/uiStore";
 import { SidebarNav } from "./SidebarNav";
-import { AskAssistantButton } from "./AskAssistantButton";
+
+const WIDGET_SCRIPT_ID = "harness-assistant-widget";
+const WIDGET_SRC = "/assistant-widget.js";
+const API_BASE_URL =
+  (import.meta.env.VITE_ASSISTANT_API_URL as string | undefined) ??
+  "http://localhost:3001";
+
+function currentDocTitle(): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const h1 = document.querySelector("main h1")?.textContent?.trim();
+  return h1 && h1.length > 0 ? h1 : document.title;
+}
 
 const navItems = [
   { to: "/", label: "Trang chủ" },
@@ -22,6 +33,18 @@ export function RootLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     setSidebarOpen(false);
   }, [location.pathname, setSidebarOpen]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (customElements.get("harness-assistant")) return;
+    if (document.getElementById(WIDGET_SCRIPT_ID)) return;
+
+    const script = document.createElement("script");
+    script.id = WIDGET_SCRIPT_ID;
+    script.src = WIDGET_SRC;
+    script.async = true;
+    document.head.appendChild(script);
+  }, []);
 
   const isHome = location.pathname === "/";
 
@@ -66,7 +89,12 @@ export function RootLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
-            <AskAssistantButton />
+            <harness-assistant
+              id="assistant-root"
+              data-api-base-url={API_BASE_URL}
+              data-academy-route={location.pathname}
+              data-academy-title={currentDocTitle()}
+            />
             <button
               type="button"
               onClick={toggleTheme}

@@ -19,12 +19,20 @@ function attr(source: AttrSource, name: string): string | undefined {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
+function firstAttr(source: AttrSource, names: string[]): string | undefined {
+  for (const name of names) {
+    const value = attr(source, name);
+    if (value) return value;
+  }
+  return undefined;
+}
+
 /** Parse the `<harness-assistant>` element's attributes into a WidgetConfig. */
 export function parseWidgetConfig(source: AttrSource): WidgetConfig {
   const config: WidgetConfig = {};
-  const apiBaseUrl = attr(source, 'api-base-url');
-  const academyRoute = attr(source, 'academy-route');
-  const academyTitle = attr(source, 'academy-title');
+  const apiBaseUrl = firstAttr(source, ['data-api-base-url', 'api-base-url']);
+  const academyRoute = firstAttr(source, ['data-academy-route', 'academy-route']);
+  const academyTitle = firstAttr(source, ['data-academy-title', 'academy-title']);
   if (apiBaseUrl) config.apiBaseUrl = apiBaseUrl;
   if (academyRoute) config.academyRoute = academyRoute;
   if (academyTitle) config.academyTitle = academyTitle;

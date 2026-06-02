@@ -1,10 +1,9 @@
-import { AssistantTopBar } from './AssistantTopBar';
-import { AssistantStatusBar } from './AssistantStatusBar';
-import { WelcomeView } from './WelcomeView';
-import { MessageThread } from './MessageThread';
-import { ChatFollowUpComposer } from './ChatFollowUpComposer';
-import { SuggestionChips } from './SuggestionChips';
-import { useChatStream } from '../../features/chat/useChatStream';
+import { AssistantTopBar } from "./AssistantTopBar";
+import { WelcomeView } from "./WelcomeView";
+import { MessageThread } from "./MessageThread";
+import { ChatFollowUpComposer } from "./ChatFollowUpComposer";
+import { SuggestionChips } from "./SuggestionChips";
+import { useChatStream } from "../../features/chat/useChatStream";
 
 interface ChatPageProps {
   /** Embedded widget: shows + wires the top-bar close button. Omitted in the standalone app. */
@@ -14,7 +13,8 @@ interface ChatPageProps {
 }
 
 export function ChatPage({ onClose, contextLabel }: ChatPageProps = {}) {
-  const { isLoading, turns, suggestions, error, submit, vote } = useChatStream();
+  const { isLoading, turns, suggestions, error, submit, vote } =
+    useChatStream();
   const inChat = turns.length > 0 || isLoading;
 
   return (
@@ -22,7 +22,8 @@ export function ChatPage({ onClose, contextLabel }: ChatPageProps = {}) {
       <AssistantTopBar onClose={onClose} />
       {contextLabel ? (
         <div className="px-4 py-1.5 bg-surface-container-low border-b border-border-subtle text-[12px] text-text-muted truncate">
-          Đang hỏi về: <span className="text-on-surface font-medium">{contextLabel}</span>
+          Đang hỏi về:{" "}
+          <span className="text-on-surface font-medium">{contextLabel}</span>
         </div>
       ) : null}
       {inChat ? (
@@ -35,13 +36,11 @@ export function ChatPage({ onClose, contextLabel }: ChatPageProps = {}) {
               </div>
             ) : null}
             <ChatFollowUpComposer isLoading={isLoading} onSubmit={submit} />
-            <AssistantStatusBar variant="chat" />
           </footer>
         </>
       ) : (
         <>
           <WelcomeView isLoading={isLoading} onSubmit={submit} />
-          <AssistantStatusBar variant="welcome" />
         </>
       )}
       {error ? (
