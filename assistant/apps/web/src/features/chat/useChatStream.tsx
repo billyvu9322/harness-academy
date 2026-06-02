@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import type { Citation } from "@assistant/shared/citations";
 import type { Suggestion } from "@assistant/shared/suggestions";
+import type { ConversationSummary } from "@assistant/shared/chat";
 import type { Turn } from "../../components/chat/MessageThread";
 import {
   getConversationMessages,
+  listConversations,
   postChatMessage,
   postFeedback,
 } from "./chatApi";
 import { messagesToTurns } from "./restore";
+import {
+  addOwnedId,
+  clearOwnedIds,
+  loadOwnedIds,
+} from "./ownedConversations";
 import { readSseStream } from "../../lib/sse";
 import { nextStatus, STATUS_THINKING } from "../../lib/agentStatus";
 import {
@@ -42,6 +49,16 @@ interface ChatStreamState {
   submit: (prompt: string) => Promise<void>;
   vote: (messageId: string, vote: "up" | "down") => void;
   newChat: () => void;
+  /** This browser's past conversations, most-recent-first (hybrid history). */
+  history: ConversationSummary[];
+  /** Id of the conversation currently shown, for highlighting in the history list. */
+  activeConversationId: string | null;
+  /** Re-fetch history summaries from the server; call when opening the panel. */
+  refreshHistory: () => Promise<void>;
+  /** Replace the thread with a stored conversation. */
+  loadConversation: (id: string) => Promise<void>;
+  /** Drop the local history index (server rows are kept). */
+  clearHistory: () => void;
 }
 
 function genId(): string {
@@ -67,11 +84,30 @@ export function useChatStream(): ChatStreamState {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [history, setHistory] = useState<ConversationSummary[]>([]);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const conversationId = useRef<string | undefined>(undefined);
+
+  // Fetch summaries for every conversation, then keep only the ones this browser owns
+  // (hybrid scoping — see ownedConversations.ts). Sorted most-recent-first by the server.
+  async function refreshHistory() {
+    const owned = new Set(loadOwnedIds());
+    if (owned.size === 0) {
+      setHistory([]);
+      return;
+    }
+    try {
+      const { conversations } = await listConversations();
+      setHistory(conversations.filter((c) => owned.has(c.id)));
+    } catch {
+      // Transient failure: leave the existing list in place rather than blanking it.
+    }
+  }
 
   // On mount, restore the previous conversation from the server (U5). Runs once;
   // only seeds when the thread is empty so we never clobber an in-progress session.
   useEffect(() => {
+    void refreshHistory();
     const storedId = loadStoredConversationId();
     if (!storedId) return;
 
@@ -81,6 +117,7 @@ export function useChatStream(): ChatStreamState {
         const { messages } = await getConversationMessages(storedId);
         if (cancelled) return;
         conversationId.current = storedId;
+        setActiveConversationId(storedId);
         const restored = messagesToTurns(messages);
         // Guard against overwriting a conversation the user already started.
         setTurns((prev) => (prev.length === 0 ? restored : prev));
@@ -144,9 +181,15 @@ export function useChatStream(): ChatStreamState {
       });
       const cid = response.headers.get("X-Conversation-Id");
       if (cid) {
+        const isNew = conversationId.current !== cid;
         conversationId.current = cid;
+        setActiveConversationId(cid);
         // Persist so a reload can restore this thread from the server (U5).
         persistConversationId(cid);
+        // Record ownership so this conversation shows up in this browser's history.
+        addOwnedId(cid);
+        // A freshly-minted conversation isn't in the history list yet — pull it in.
+        if (isNew) void refreshHistory();
       }
       if (!response.ok || !response.body)
         throw new Error(`stream failed (${response.status})`);
@@ -220,10 +263,35 @@ export function useChatStream(): ChatStreamState {
   // next submit creates a brand-new server conversation. Returns the UI to the welcome view.
   function newChat() {
     conversationId.current = undefined;
+    setActiveConversationId(null);
     clearStoredConversationId();
     setTurns([]);
     setSuggestions([]);
     setError(null);
+  }
+
+  // Load a stored conversation into the thread, replacing whatever is shown.
+  async function loadConversation(id: string) {
+    setError(null);
+    setSuggestions([]);
+    try {
+      const { messages } = await getConversationMessages(id);
+      conversationId.current = id;
+      setActiveConversationId(id);
+      persistConversationId(id);
+      addOwnedId(id);
+      setTurns(messagesToTurns(messages));
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Không tải được cuộc trò chuyện.",
+      );
+    }
+  }
+
+  // Drop the local history index. Server rows survive; they just stop being listed.
+  function clearHistory() {
+    clearOwnedIds();
+    setHistory([]);
   }
 
   function vote(messageId: string, value: "up" | "down") {
@@ -234,5 +302,18 @@ export function useChatStream(): ChatStreamState {
     });
   }
 
-  return { isLoading, turns, suggestions, error, submit, vote, newChat };
+  return {
+    isLoading,
+    turns,
+    suggestions,
+    error,
+    submit,
+    vote,
+    newChat,
+    history,
+    activeConversationId,
+    refreshHistory,
+    loadConversation,
+    clearHistory,
+  };
 }

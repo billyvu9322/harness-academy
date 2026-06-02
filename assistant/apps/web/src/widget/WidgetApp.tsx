@@ -34,8 +34,9 @@ export function WidgetApp({ config }: WidgetAppProps) {
           style={{
             minHeight: "calc(100% - 60px)",
             height: "calc(100% - 60px)",
+            borderRadius: ".75rem",
           }}
-          className={`border-r-4 fixed top-1/2 -translate-y-1/2 right-5 w-[min(700px,100vw)] bg-surface shadow-2xl z-[2147483647] flex transition-transform duration-300 ${
+          className={`overflow-hidden fixed top-1/2 -translate-y-1/2 right-5 w-[min(700px,100vw)] bg-surface shadow-2xl z-[2147483647] flex transition-transform duration-300 ${
             open ? "translate-x-0" : "translate-x-[120%] right-0"
           }`}
         >

@@ -1,47 +1,51 @@
-import { run } from '@openai/agents';
-import type { StreamEvent } from '@assistant/shared/events';
-import type { Citation } from '@assistant/shared/citations';
-import type { Suggestion } from '@assistant/shared/suggestions';
-import { initLlm } from './llm';
-import { assistant } from './runtime';
-import { buildCitations } from '../docs/citations';
-import { checkInput } from './guardrails';
-import { createAssistantContext, type AssistantContext } from './context';
-import { buildAgentInput, type HistoryTurn } from './history';
+import { run } from "@openai/agents";
+import type { StreamEvent } from "@assistant/shared/events";
+import type { Citation } from "@assistant/shared/citations";
+import type { Suggestion } from "@assistant/shared/suggestions";
+import { initLlm } from "./llm";
+import { assistant } from "./runtime";
+import { buildCitations } from "../docs/citations";
+import { checkInput } from "./guardrails";
+import { createAssistantContext, type AssistantContext } from "./context";
+import { buildAgentInput, type HistoryTurn } from "./history";
 
 const MAX_TURNS = 8;
 const MAX_SUGGESTIONS = 3;
 
 function toolName(item: any): string {
-  return item?.rawItem?.name ?? item?.name ?? 'tool';
+  return item?.rawItem?.name ?? item?.name ?? "tool";
 }
 
 function safeParseArgs(raw: unknown): Record<string, any> {
-  if (typeof raw !== 'string') return raw && typeof raw === 'object' ? (raw as Record<string, any>) : {};
+  if (typeof raw !== "string")
+    return raw && typeof raw === "object" ? (raw as Record<string, any>) : {};
   try {
     const v = JSON.parse(raw);
-    return v && typeof v === 'object' ? v : {};
+    return v && typeof v === "object" ? v : {};
   } catch {
     return {};
   }
 }
 
 /** Human-readable detail for a tool.started event, from its call arguments. */
-function buildToolDetail(name: string, args: Record<string, any>): string | undefined {
+function buildToolDetail(
+  name: string,
+  args: Record<string, any>,
+): string | undefined {
   switch (name) {
-    case 'grep_docs':
-      return typeof args.pattern === 'string' ? args.pattern : undefined;
-    case 'read_doc_section':
-      return typeof args.docId === 'string'
+    case "grep_docs":
+      return typeof args.pattern === "string" ? args.pattern : undefined;
+    case "read_doc_section":
+      return typeof args.docId === "string"
         ? args.heading
           ? `${args.docId} · ${args.heading}`
           : args.docId
         : undefined;
-    case 'harness_blueprint':
-      return typeof args.workflow === 'string' ? args.workflow : undefined;
-    case 'list_docs':
+    case "harness_blueprint":
+      return typeof args.workflow === "string" ? args.workflow : undefined;
+    case "list_docs":
       return Array.isArray(args.contentTypes) && args.contentTypes.length
-        ? args.contentTypes.join(', ')
+        ? args.contentTypes.join(", ")
         : undefined;
     default:
       return undefined;
@@ -51,13 +55,19 @@ function buildToolDetail(name: string, args: Record<string, any>): string | unde
 /** Small summary for a tool.completed event, from its output (never the full payload). */
 function buildToolSummary(name: string, output: any): string | undefined {
   if (Array.isArray(output)) {
-    const unit = name === 'grep_docs' ? 'matches' : name === 'list_docs' ? 'docs' : 'results';
+    const unit =
+      name === "grep_docs"
+        ? "matches"
+        : name === "list_docs"
+          ? "docs"
+          : "results";
     return `${output.length} ${unit}`;
   }
-  if (output && typeof output === 'object') {
-    if (output.found === false) return 'not found';
-    if (name === 'read_doc_section') return `section: ${output.heading ?? 'whole doc'}`;
-    if (name === 'harness_blueprint' && Array.isArray(output.sections)) {
+  if (output && typeof output === "object") {
+    if (output.found === false) return "not found";
+    if (name === "read_doc_section")
+      return `section: ${output.heading ?? "whole doc"}`;
+    if (name === "harness_blueprint" && Array.isArray(output.sections)) {
       return `${output.sections.length} sections`;
     }
   }
@@ -66,33 +76,33 @@ function buildToolSummary(name: string, output: any): string | undefined {
 
 /** Pure mapper: one SDK stream event → one app StreamEvent (or null if not surfaced). */
 export function mapStreamEvent(ev: any): StreamEvent | null {
-  if (ev?.type === 'raw_model_stream_event') {
+  if (ev?.type === "raw_model_stream_event") {
     const d = ev.data;
-    if (d?.type === 'output_text_delta' && typeof d.delta === 'string') {
-      return { type: 'message.delta', delta: d.delta };
+    if (d?.type === "output_text_delta" && typeof d.delta === "string") {
+      return { type: "message.delta", delta: d.delta };
     }
-    if (d?.type === 'response_started') return { type: 'message.started' };
+    if (d?.type === "response_started") return { type: "message.started" };
     return null;
   }
-  if (ev?.type === 'run_item_stream_event') {
+  if (ev?.type === "run_item_stream_event") {
     const raw = ev.item?.rawItem;
     const name = toolName(ev.item);
     const callId: string = raw?.callId ?? name;
     switch (ev.name) {
-      case 'tool_called': {
+      case "tool_called": {
         const detail = buildToolDetail(name, safeParseArgs(raw?.arguments));
         return detail
-          ? { type: 'tool.started', tool: name, callId, detail }
-          : { type: 'tool.started', tool: name, callId };
+          ? { type: "tool.started", tool: name, callId, detail }
+          : { type: "tool.started", tool: name, callId };
       }
-      case 'tool_output': {
+      case "tool_output": {
         const summary = buildToolSummary(name, ev.item?.output);
         return summary
-          ? { type: 'tool.completed', tool: name, callId, summary }
-          : { type: 'tool.completed', tool: name, callId };
+          ? { type: "tool.completed", tool: name, callId, summary }
+          : { type: "tool.completed", tool: name, callId };
       }
-      case 'message_output_created':
-        return { type: 'message.completed' };
+      case "message_output_created":
+        return { type: "message.completed" };
       default:
         return null;
     }
@@ -129,19 +139,24 @@ export async function* streamAssistant(
 
   const input = checkInput(message);
   if (input.tripwire) {
-    yield { type: 'error', message: `input rejected: ${input.reason}` };
-    yield { type: 'done' };
+    yield { type: "error", message: `input rejected: ${input.reason}` };
+    yield { type: "done" };
     return;
   }
 
-  const context = opts.context ?? createAssistantContext({ userLanguage: opts.userLanguage });
+  const context =
+    opts.context ?? createAssistantContext({ userLanguage: opts.userLanguage });
   try {
     const input = buildAgentInput(opts.history ?? [], message);
-    const result = await run(assistant.orchestrator, input as Parameters<typeof run>[1], {
-      context,
-      stream: true,
-      maxTurns: MAX_TURNS,
-    });
+    const result = await run(
+      assistant.orchestrator,
+      input as Parameters<typeof run>[1],
+      {
+        context,
+        stream: true,
+        maxTurns: MAX_TURNS,
+      },
+    );
 
     for await (const ev of result) {
       const mapped = mapStreamEvent(ev);
@@ -150,11 +165,15 @@ export async function* streamAssistant(
     await result.completed;
 
     const citations = buildCitations(context.reads);
-    for (const citation of citations) yield { type: 'citation', citation };
-    for (const suggestion of buildSuggestions(citations)) yield { type: 'suggestion', suggestion };
-    yield { type: 'done' };
+    for (const citation of citations) yield { type: "citation", citation };
+    for (const suggestion of buildSuggestions(citations))
+      yield { type: "suggestion", suggestion };
+    yield { type: "done" };
   } catch (err) {
-    yield { type: 'error', message: err instanceof Error ? err.message : 'unknown error' };
-    yield { type: 'done' };
+    yield {
+      type: "error",
+      message: err instanceof Error ? err.message : "unknown error",
+    };
+    yield { type: "done" };
   }
 }

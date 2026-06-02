@@ -112,7 +112,9 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
     const reqOrigin = request.headers.origin;
     const allowedOrigins = parseAllowedOrigins(env.WEB_ORIGINS);
     const allowOrigin =
-      reqOrigin && isOriginAllowed(reqOrigin, allowedOrigins) ? reqOrigin : allowedOrigins[0];
+      reqOrigin && isOriginAllowed(reqOrigin, allowedOrigins)
+        ? reqOrigin
+        : allowedOrigins[0];
 
     reply.hijack();
     reply.raw.writeHead(200, {

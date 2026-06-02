@@ -1,4 +1,9 @@
-import type { ChatMessage, ChatRequest, FeedbackRequest } from '@assistant/shared/chat';
+import type {
+  ChatMessage,
+  ChatRequest,
+  ConversationSummary,
+  FeedbackRequest,
+} from '@assistant/shared/chat';
 import { getApiBaseUrl } from '../../lib/runtimeConfig';
 
 export async function postChatMessage(input: ChatRequest): Promise<Response> {
@@ -35,7 +40,10 @@ export async function getConversationMessages(
   return response.json() as Promise<{ conversationId: string; messages: ChatMessage[] }>;
 }
 
-export async function listConversations(): Promise<{ conversations: unknown[] }> {
+export async function listConversations(): Promise<{ conversations: ConversationSummary[] }> {
   const response = await fetch(`${getApiBaseUrl()}/api/conversations`);
-  return response.json() as Promise<{ conversations: unknown[] }>;
+  if (!response.ok) {
+    throw new Error(`conversations fetch failed (${response.status})`);
+  }
+  return response.json() as Promise<{ conversations: ConversationSummary[] }>;
 }

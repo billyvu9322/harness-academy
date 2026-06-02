@@ -25,29 +25,32 @@ python d:\Document\harness-academy\seminar\build_deck.py
 
 ## Bản đồ slide & timing (30')
 
-| # | Slide | Thời lượng | Nội dung lõi |
-|---|-------|-----------|--------------|
-| 1 | Title | 0:00–0:30 | Hook: "model giỏi fail repo này → vấn đề là harness" |
-| 2 | Agenda | 0:30–1:00 | 6 trụ cột + demo, nhịp ~3'/chủ đề |
-| 3 | Built with Claude Code | 1:00–2:00 | 3 artifact: academy · assistant · template — đều là harness |
-| 4 | §1 divider | — | What Is Harness Engineering? |
-| 5 | §1 content | 2:00–5:00 | 5-subsystem · behavior gap · control/execution plane · repo as SoR |
-| 6 | §2 divider | — | Context Engineering |
-| 7 | §2 content | 5:00–8:00 | progressive disclosure · risk lane (2K/5K/10K) · compaction-aware · 1M-token waste |
-| 8 | §3 divider | — | Orchestration |
-| 9 | §3 content | 8:00–11:00 | query loop 5 phần · orchestrator/sub-agent · HarnessOrchestrator |
-| 10 | §4 divider | — | Constraints, Guardrails & Safe Autonomy |
-| 11 | §4 content | 11:00–14:00 | scope lock · finish gate · circuit breaker · error là main path |
-| 12 | §5 divider | — | Specs, Agent Files & Workflow Design |
-| 13 | §5 content | 14:00–17:00 | AGENTS.md index · feature list primitive · init phase · skill trigger |
-| 14 | §6 divider | — | Evals & Observability |
-| 15 | §6 content | 17:00–20:00 | golden questions · LLM-judge · provenance citations · trace summary |
-| 16 | DEMO divider | 20:00 | chuyển sang demo |
-| 17 | Demo 1 | 20:00–24:30 | **Sơ đồ kiến trúc harness Assistant** (conceptual, không technical) |
-| 18 | Demo 2 | 24:30–28:30 | **Sơ đồ cấu trúc** harness components → Template Automation Test |
-| 19 | Open Issues | 28:30–29:15 | 6 khoảng trống để thảo luận |
-| 20 | Takeaways | 29:15–29:45 | 5 câu mang về |
-| 21 | Thanks / Q&A | 29:45–30:00+ | tài liệu + Q&A |
+Hiện tại **22 slide** (đã apply adoption set). Đã bỏ chrome theo yêu cầu: kicker "HARNESS ACADEMY", dòng "30 minutes", source-note dưới mỗi slide, slide "Built with Claude Code". §1 đổi tên → "What a Harness Actually is ?".
+
+| # | Slide | Nội dung lõi |
+|---|-------|--------------|
+| 1 | Title | "AI Agent Harness" (đã trim chrome) |
+| 2 | Agenda | 6 trụ cột + demo (bỏ duration column) |
+| 3 | **Poll — Why do agents fail?** | A–E, reveal "failures live in the Harness, not the Model" (NEW) |
+| 4 | **Harness ≠ Model** | Model (brain) vs Harness (OS); Agent = Model + Harness (NEW) |
+| 5 | §1 divider | What a Harness Actually is ? |
+| 6 | §1 content | 5-subsystem · behavior gap · control/execution plane · repo as SoR |
+| 7 | §2 divider | Context Engineering |
+| 8 | §2 content | Context = RAM · Agent Memory (working/long-term/knowledge) · 1M-token waste |
+| 9 | §3 divider | Orchestration |
+| 10 | §3 content | human-team Planner→Dev→Tester · query loop · orchestrator/sub-agent |
+| 11 | §4 divider | Constraints, Guardrails & Safe Autonomy |
+| 12 | §4 content | **Done vs Really Done** (Done = Evidence) · scope lock · circuit breaker |
+| 13 | §5 divider | Specs, Agent Files & Workflow Design |
+| 14 | §5 content | without/with AGENTS.md · index · feature list primitive · init phase |
+| 15 | §6 divider | Evals & Observability |
+| 16 | §6 content | **Software Test → Agent Test** (Evals = Unit Tests for Agents) · provenance citations |
+| 17 | DEMO divider | chuyển sang demo |
+| 18 | Demo 1 | Sơ đồ kiến trúc harness Assistant (+ notes failure-first) |
+| 19 | Demo 2 | Sơ đồ cấu trúc → Template Automation Test (+ notes before/after) |
+| 20 | Tooling | 6 free repo tiết kiệm token + orchestrate (superpowers / everything-claude-code) |
+| 21 | Takeaways | 5 câu mang về |
+| 22 | Thanks / Q&A | "intern with root access" + tài liệu |
 
 ---
 
@@ -86,14 +89,22 @@ Băng xuyên suốt (dưới): **State** (Postgres — hội thoại + feedback,
 
 ---
 
-## Open issues (slide 19 — để thảo luận / backlog)
+## Tooling (slide 19 — save tokens & orchestrate)
 
-1. **Failure attribution** — decision tree gán lỗi theo tầng (context/tool/env/state/feedback).
-2. **Context self-tuning** — agent tự đo "context sắp đầy / load chưa tối ưu" + auto-compact theo lane.
-3. **Sub-agent regenerate** — khi nào sub-agent tự regenerate vs trả summary lỗi cho orchestrator.
-4. **Multi-agent re-approval** — escalation khi high-risk scenario đổi schema giữa planner→generator→evaluator.
-5. **Context hand-off** — spec do planner viết: vào context generator hay lưu riêng?
-6. **Trace → auto-fix loop** — trace lỗi lặp → tự đề xuất sửa docs/schema/test (hiện thủ công).
+Free Claude Code repos. **Cắt token:** `vercel-labs/agent-browser` (Chrome qua accessibility tree, ~82% ít token) · `rtk-ai/rtk` (nén output lệnh dev, ~20–30%) · `juliusbrussee/caveman` (skill output ngắn) · `tirth8205/code-review-graph` (AST map, tới 49× ít token). **Đo usage:** `Gronsten/claude-usage-monitor` (token realtime 5h window) · `phuryn/claude-usage` (lịch sử session/day/week). **Orchestrate:** `superpowers` · `everything-claude-code` (bundle skills/subagents/hooks). Handle 2 repo orchestrator chưa verify owner.
+
+## Open Issues (đã cắt khỏi deck — giữ ở đây để xem lại / backlog)
+
+Sáu khoảng trống thật trong repo. Không còn là slide, nhưng giữ nguyên để cân nhắc đưa lại hoặc dùng làm chủ đề thảo luận / backlog harness sau.
+
+1. **Failure attribution** — decision tree gán lỗi theo tầng (context / tool / env / state / feedback). Repo nói "ablation" nhưng chưa có checklist cụ thể.
+2. **Context self-tuning** — chưa có cơ chế agent tự đo "context sắp đầy / load chưa tối ưu" và auto-compact theo risk lane.
+3. **Sub-agent regenerate** — khi nào sub-agent tự regenerate output ungrounded vs trả summary lỗi cho orchestrator? Ảnh hưởng token + quality.
+4. **Multi-agent re-approval** — protocol escalation khi high-risk scenario cần đổi schema giữa planner → generator → evaluator.
+5. **Context hand-off** — spec do planner viết: nên đi vào context của generator hay lưu riêng?
+6. **Trace → auto-fix loop** — trace lỗi lặp → tự phát hiện pattern → đề xuất sửa docs/schema/test (hiện vẫn thủ công, con người đọc trace).
+
+> Liên quan / mở rộng: `docs/Viblo-Harness-Engineering.md` §7 (gap so với cross-vendor: eval single-step/multi-turn, computational-before-inferential, "success is silent").
 
 ## Gợi ý làm deck "hoàn thiện hơn" (tuỳ chọn, ngoài scope hiện tại)
 

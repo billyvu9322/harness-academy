@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `AGENTS.md` at repo root is the canonical operating doc for this workspace. Follow it. This file only adds Claude-specific notes and corrections.
 - `AI-Agent-Harness.md` is the primary seminar artifact. Keep it framework-agnostic; do not reintroduce OpenAI Agents SDK code/examples unless the user asks.
-- `docs/OpenAI-Harness-Engineering.md`, `docs/Harness-Template-Flow.md`, `docs/Awesome-Harness-Engineering-Flow.md` are sourced research notes — preserve source URLs and snapshot dates when editing.
+- `docs/OpenAI-Harness-Engineering.md`, `docs/Harness-Template-Flow.md`, `docs/Awesome-Harness-Engineering-Flow.md`, `docs/Viblo-Harness-Engineering.md` are sourced research notes — preserve source URLs and snapshot dates when editing.
 
 ## Repo Shape
 
