@@ -17,7 +17,7 @@ Three runnable subtrees:
 | Path | What | Manifest |
 |------|------|----------|
 | `academy/` | Vite + React 19 site (Vietnamese Harness Academy content) | `package.json` (pnpm) |
-| `assistant/` | Turborepo monorepo: `apps/api`, `apps/web`, `packages/shared` | `package.json` + `turbo.json` + `pnpm-workspace.yaml` |
+| `assistant/` | Turborepo monorepo: `apps/api` (Fastify agent harness), `apps/web` (React 18 chat UI + embeddable widget), `packages/shared` (Zod contracts) | `package.json` + `turbo.json` + `pnpm-workspace.yaml` |
 | `templates/automation-test-harness-experimental/` | Sample Playwright harness — has its own `AGENTS.md` + `CLAUDE.md`; treat those as authoritative inside that subtree | `package.json` |
 
 Note: root `AGENTS.md` references the sample harness as `samples/automation-test-harness-experimental/` — actual path is `templates/automation-test-harness-experimental/`. Same content, different folder.
@@ -36,8 +36,11 @@ Note: root `AGENTS.md` references the sample harness as `samples/automation-test
 
 - `pnpm install` then `pnpm dev` (turbo `--parallel`)
 - `pnpm build` / `pnpm typecheck` / `pnpm lint` / `pnpm test` — all routed through turbo
-- DB: `pnpm db:generate` and `pnpm db:migrate` (forwarded to `@assistant/api`)
-- See `assistant/AGENTS.md` for scope rules — keep `packages/shared` as the source of truth for cross-app contracts; do not add retrieval/orchestration/persistence without explicit scope expansion.
+- DB: `pnpm db:generate` and `pnpm db:migrate` (forwarded to `@assistant/api`); local Postgres via `docker compose up -d`
+- Eval (live, LLM-judge): `pnpm eval`
+- Widget: `pnpm --filter @assistant/web build:widget` — builds the one-file embed (Vite lib mode) **and** copies it to `academy/public/assistant-widget.js`
+- Deploy artifact: `pnpm package:zip` — syncs corpus then zips `assistant/` (excludes `node_modules`/`dist`/`.env*`); see `assistant/Dockerfile` + `docker-compose.yml`
+- **`assistant/AGENTS.md` is canonical for the harness** — full architecture, request-flow layers, SSE event contract, and scope rules. Read it before changing the agent. Keep `packages/shared` as the source of truth for cross-app contracts; do not add retrieval/orchestration/persistence without explicit scope expansion.
 
 ### `templates/automation-test-harness-experimental/`
 
@@ -52,6 +55,15 @@ Note: root `AGENTS.md` references the sample harness as `samples/automation-test
 - Required frontmatter: `title`, `description`, `order`, `duration`, `tags`.
 - Routes are **manual** in `academy/src/router.tsx` — a new content section needs route + collection wiring, not just a Markdown file.
 - Restart dev server if sidebar does not update after adding content.
+
+## Assistant ↔ Academy Widget (cross-repo)
+
+The academy embeds the assistant chat as a self-contained widget — the two subtrees are coupled at one seam:
+
+- `assistant` builds `dist-widget/assistant-widget.js` (custom element `<harness-assistant>`, Shadow DOM, Tailwind + React bundled in) and `scripts/copy-widget.mjs` writes it to `academy/public/assistant-widget.js`. The committed copy in `academy/public/` is a **build output** — regenerate it with `build:widget`, don't hand-edit.
+- `academy/src/components/RootLayout.tsx` injects the script and mounts `<harness-assistant>` at **body root level (after the footer, not inside the header)** — the header's `backdrop-blur` (a `backdrop-filter`) would otherwise become the containing block for the widget's `position:fixed` panel and trap it under the header.
+- Widget config flows through `data-*` attributes: `data-api-base-url` (from `VITE_ASSISTANT_API_URL`), `data-academy-route`, `data-academy-title` (read from the page's `main h1`).
+- The API origin must be in the assistant's `WEB_ORIGINS` allowlist (`config/origins.ts`) — honored by both `@fastify/cors` and the hijacked SSE route's manual ACAO header.
 
 ## Content Rules
 

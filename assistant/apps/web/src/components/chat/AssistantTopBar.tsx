@@ -1,9 +1,11 @@
 interface AssistantTopBarProps {
   /** When provided (embedded widget), the close button calls this; otherwise it is hidden. */
   onClose?: () => void;
+  /** Resets the thread and starts a fresh conversation. Hidden when omitted. */
+  onNewChat?: () => void;
 }
 
-export function AssistantTopBar({ onClose }: AssistantTopBarProps = {}) {
+export function AssistantTopBar({ onClose, onNewChat }: AssistantTopBarProps = {}) {
   return (
     <header className="flex justify-between items-center h-14 px-4 w-full bg-surface-container-lowest border-b border-border-subtle sticky top-0 z-50">
       <div className="flex items-center gap-2 text-label-caps font-label-caps font-bold text-on-surface">
@@ -16,6 +18,17 @@ export function AssistantTopBar({ onClose }: AssistantTopBarProps = {}) {
         Assistant
       </div>
       <div className="flex items-center gap-4">
+        {onNewChat ? (
+          <button
+            type="button"
+            aria-label="New chat"
+            title="Cuộc trò chuyện mới"
+            onClick={onNewChat}
+            className="material-symbols-outlined text-text-muted hover:text-primary transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0"
+          >
+            edit_square
+          </button>
+        ) : null}
         <button
           type="button"
           aria-label="Open in new window"

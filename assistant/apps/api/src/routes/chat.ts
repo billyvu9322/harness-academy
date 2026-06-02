@@ -117,13 +117,21 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
     reply.hijack();
     reply.raw.writeHead(200, {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      // no-cache stops client/proxy caching; no-transform stops CDNs from buffering to recompress.
+      "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
+      // Disable reverse-proxy response buffering (nginx and compatible). Without this the proxy
+      // holds the whole SSE stream until upstream closes, so the UI only sees text at `done`.
+      "X-Accel-Buffering": "no",
       // Reflect the caller's origin when allowed; only set the header if we have one.
       ...(allowOrigin ? { "Access-Control-Allow-Origin": allowOrigin } : {}),
       "Access-Control-Expose-Headers": "X-Conversation-Id",
       "X-Conversation-Id": conversationId,
     });
+    // Push headers now and disable Nagle so each per-token SSE frame leaves the socket
+    // immediately instead of being coalesced — the client paints tokens as they arrive.
+    reply.raw.flushHeaders();
+    reply.raw.socket?.setNoDelay(true);
 
     let answer = "";
     const citations: Citation[] = [];

@@ -40,7 +40,7 @@ export function ChatFollowUpComposer({ isLoading = false, onSubmit }: ChatFollow
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={handleKey}
-          placeholder="Ask follow up"
+          placeholder="Hỏi tiếp..."
           disabled={isLoading}
           className="w-full bg-input-bg border border-border-subtle rounded-xl pl-11 pr-14 py-3.5 text-body-lg text-on-surface placeholder:text-text-muted focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none shadow-sm disabled:opacity-60"
         />

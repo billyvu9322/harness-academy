@@ -13,13 +13,13 @@ interface ChatPageProps {
 }
 
 export function ChatPage({ onClose, contextLabel }: ChatPageProps = {}) {
-  const { isLoading, turns, suggestions, error, submit, vote } =
+  const { isLoading, turns, suggestions, error, submit, vote, newChat } =
     useChatStream();
   const inChat = turns.length > 0 || isLoading;
 
   return (
     <main className="flex flex-col relative h-full overflow-hidden bg-surface text-on-background flex-1">
-      <AssistantTopBar onClose={onClose} />
+      <AssistantTopBar onClose={onClose} onNewChat={inChat ? newChat : undefined} />
       {contextLabel ? (
         <div className="px-4 py-1.5 bg-surface-container-low border-b border-border-subtle text-[12px] text-text-muted truncate">
           Đang hỏi về:{" "}

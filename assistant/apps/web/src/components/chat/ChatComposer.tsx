@@ -27,9 +27,8 @@ export function ChatComposer({
       className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl p-5 relative focus-within:border-forge-orange focus-within:ring-1 focus-within:ring-forge-orange transition-all shadow-sm"
     >
       <textarea
-        value={draft}
         onChange={(event) => setDraft(event.target.value)}
-        placeholder="What would you like to know?"
+        placeholder="Bạn muốn hỏi gì?"
         disabled={isLoading}
         className="w-full bg-transparent border-none focus:outline-none focus:ring-0 text-[18px] leading-7 text-on-surface resize-none min-h-[160px] p-0 disabled:opacity-60"
         onKeyDown={(event) => {

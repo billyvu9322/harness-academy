@@ -89,12 +89,6 @@ export function RootLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
-            <harness-assistant
-              id="assistant-root"
-              data-api-base-url={API_BASE_URL}
-              data-academy-route={location.pathname}
-              data-academy-title={currentDocTitle()}
-            />
             <button
               type="button"
               onClick={toggleTheme}
@@ -152,6 +146,15 @@ export function RootLayout({ children }: { children: ReactNode }) {
           </span>
         </div>
       </footer>
+
+      {/* Mounted at body/root level (NOT in the header): the header's backdrop-filter would
+          otherwise become the containing block for the widget's position:fixed panel. */}
+      <harness-assistant
+        id="assistant-root"
+        data-api-base-url={API_BASE_URL}
+        data-academy-route={location.pathname}
+        data-academy-title={currentDocTitle()}
+      />
     </div>
   );
 }
