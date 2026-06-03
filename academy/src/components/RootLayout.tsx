@@ -5,9 +5,6 @@ import { SidebarNav } from "./SidebarNav";
 
 const WIDGET_SCRIPT_ID = "harness-assistant-widget";
 const WIDGET_SRC = "/assistant-widget.js";
-const API_BASE_URL =
-  (import.meta.env.VITE_ASSISTANT_API_URL as string | undefined) ??
-  "http://localhost:3001";
 
 function currentDocTitle(): string | undefined {
   if (typeof document === "undefined") return undefined;
@@ -169,7 +166,6 @@ export function RootLayout({ children }: { children: ReactNode }) {
           otherwise become the containing block for the widget's position:fixed panel. */}
       <harness-assistant
         id="assistant-root"
-        data-api-base-url={API_BASE_URL}
         data-academy-route={location.pathname}
         data-academy-title={currentDocTitle()}
         data-chat-open={shouldOpenChat ? "true" : "false"}

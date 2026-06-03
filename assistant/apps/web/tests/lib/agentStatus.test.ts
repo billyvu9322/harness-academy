@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { StreamEvent } from '@assistant/shared/events';
-import { nextStatus, toolStatusLabel, STATUS_THINKING, STATUS_ANSWERING } from './agentStatus';
+import { nextStatus, toolStatusLabel, STATUS_THINKING, STATUS_ANSWERING } from '../../src/lib/agentStatus';
 
 describe('toolStatusLabel', () => {
   test('maps known docs tools to friendly VN labels', () => {

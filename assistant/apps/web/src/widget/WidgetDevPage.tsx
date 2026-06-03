@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 function WidgetDevHost() {
   useEffect(() => {
-    if (typeof document === 'undefined') return;
-    if (customElements.get('harness-assistant')) return;
-    void import('./index');
+    if (typeof document === "undefined") return;
+    if (customElements.get("harness-assistant")) return;
+    void import("./index");
   }, []);
 
   return (
@@ -14,10 +14,12 @@ function WidgetDevHost() {
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
             Widget Dev
           </p>
-          <h1 className="mt-2 text-3xl font-semibold">Harness Assistant Widget Sandbox</h1>
+          <h1 className="mt-2 text-3xl font-semibold">
+            Harness Assistant Widget Sandbox
+          </h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-600">
-            Trang nay mount thang <code>{'<harness-assistant />'}</code> de debug button,
-            modal, shadow DOM, va chat UI ma khong can academy.
+            Trang nay mount thang <code>{"<harness-assistant />"}</code> de
+            debug button, modal, shadow DOM, va chat UI ma khong can academy.
           </p>
         </div>
 
@@ -27,11 +29,12 @@ function WidgetDevHost() {
               <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                 Host element
               </p>
-              <p className="mt-1 text-sm text-slate-600">Mo widget tu button render ben trong custom element.</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Mo widget tu button render ben trong custom element.
+              </p>
             </div>
             <harness-assistant
               id="assistant-root"
-              data-api-base-url="http://localhost:3001"
               data-academy-route="/widget-dev"
               data-academy-title="Harness Assistant Widget Sandbox"
             />

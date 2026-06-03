@@ -1,17 +1,17 @@
-import { StrictMode } from 'react';
-import { createRoot, type Root } from 'react-dom/client';
+import { StrictMode } from "react";
+import { createRoot, type Root } from "react-dom/client";
 // `?inline` returns the compiled Tailwind CSS as a string instead of injecting it into the
 // document — so we can scope it inside the Shadow DOM and never leak styles into the host page.
-import widgetCss from '../styles.css?inline';
-import { setApiBaseUrl } from '../lib/runtimeConfig';
-import { parseWidgetConfig } from './config';
-import { WidgetApp } from './WidgetApp';
+import widgetCss from "../styles.css?inline";
+import { setApiBaseUrl } from "../lib/runtimeConfig";
+import { parseWidgetConfig } from "./config";
+import { WidgetApp } from "./WidgetApp";
 
-const ELEMENT_NAME = 'harness-assistant';
+const ELEMENT_NAME = "harness-assistant";
 
 const FONT_HREFS = [
-  'https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap',
-  'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap',
+  "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap",
+  "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap",
 ];
 
 /**
@@ -22,8 +22,8 @@ const FONT_HREFS = [
 function ensureFonts(): void {
   for (const href of FONT_HREFS) {
     if (document.head.querySelector(`link[href="${href}"]`)) continue;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
     link.href = href;
     document.head.appendChild(link);
   }
@@ -34,20 +34,20 @@ class HarnessAssistantElement extends HTMLElement {
   private mountPoint: HTMLDivElement | null = null;
 
   static get observedAttributes(): string[] {
-    return ['data-api-base-url', 'data-academy-route', 'data-academy-title', 'data-chat-open'];
+    return ["data-academy-route", "data-academy-title", "data-chat-open"];
   }
 
   connectedCallback(): void {
     // The fixed-position panel escapes layout, so the host element itself takes no space.
-    this.style.display = 'contents';
+    this.style.display = "contents";
     ensureFonts();
 
-    const shadow = this.attachShadow({ mode: 'open' });
-    const style = document.createElement('style');
+    const shadow = this.attachShadow({ mode: "open" });
+    const style = document.createElement("style");
     style.textContent = widgetCss;
     shadow.appendChild(style);
 
-    this.mountPoint = document.createElement('div');
+    this.mountPoint = document.createElement("div");
     shadow.appendChild(this.mountPoint);
 
     this.root = createRoot(this.mountPoint);
@@ -77,7 +77,7 @@ class HarnessAssistantElement extends HTMLElement {
 
 /** Register `<harness-assistant>` once. Safe to call multiple times (e.g. re-imported script). */
 export function defineHarnessAssistant(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   if (!customElements.get(ELEMENT_NAME)) {
     customElements.define(ELEMENT_NAME, HarnessAssistantElement);
   }

@@ -47,7 +47,7 @@ export function AssistantTopBar({
         >
           auto_awesome
         </span>
-        Assistant
+        <h3 className="font-headline-lg">Assistant</h3>
       </div>
       <div className="flex items-center gap-4">
         {onNewChat ? (

@@ -32,7 +32,7 @@ function firstAttr(source: AttrSource, names: string[]): string | undefined {
 /** Parse the `<harness-assistant>` element's attributes into a WidgetConfig. */
 export function parseWidgetConfig(source: AttrSource): WidgetConfig {
   const config: WidgetConfig = {};
-  const apiBaseUrl = firstAttr(source, ['data-api-base-url', 'api-base-url']);
+  const apiBaseUrl = import.meta.env.VITE_ASSISTANT_API_URL;
   const academyRoute = firstAttr(source, ['data-academy-route', 'academy-route']);
   const academyTitle = firstAttr(source, ['data-academy-title', 'academy-title']);
   const chatOpen = firstAttr(source, ['data-chat-open', 'chat-open']);

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { postFeedback } from './chatApi';
+import { postFeedback } from '../../../src/features/chat/chatApi';
 
 afterEach(() => {
   vi.restoreAllMocks();

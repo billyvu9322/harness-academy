@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { Citation } from '@assistant/shared/citations';
-import { dedupeCitationsByDoc, academyHref } from './citations';
+import { dedupeCitationsByDoc, academyHref } from '../../src/lib/citations';
 
 const c = (title: string, route?: string, sourcePath = `${title}.md`, sectionHeading?: string): Citation => ({
   title,

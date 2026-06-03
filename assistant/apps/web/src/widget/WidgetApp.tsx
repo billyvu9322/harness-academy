@@ -65,18 +65,26 @@ export function WidgetApp({ config }: WidgetAppProps) {
         type="button"
         onClick={() => setOpen(true)}
         style={{ display: open ? "none" : "inline-flex" }}
-        className="fixed bottom-6 right-6 z-[2147483645] items-center gap-2 px-4 py-3 rounded-full text-sm font-semibold text-white bg-primary-container shadow-2xl hover:opacity-90 transition-opacity"
+        className="fixed bottom-6 right-6 z-[2147483645] inline-flex items-center gap-2 rounded-full bg-surface px-3 py-2 font-headline text-[15px] font-semibold text-on-surface shadow-[0_10px_30px_rgba(15,23,42,0.12),0_2px_8px_rgba(15,23,42,0.08)] transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0"
       >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          aria-hidden
-        >
-          <path d="M12 2l1.9 5.1L19 9l-5.1 1.9L12 16l-1.9-5.1L5 9l5.1-1.9L12 2z" />
-        </svg>
-        Hỏi đáp
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-container text-on-primary-container shadow-[0_6px_14px_rgba(217,92,65,0.28)]">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="30"
+            height="30"
+            viewBox="0 0 40 40"
+            fill="none"
+          >
+            <circle cx="20" cy="20" r="18" fill="#d95c41" />
+            <path
+              d="M20 10V30M10 20H30M12.93 12.93L27.07 27.07M27.07 12.93L12.93 27.07"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </span>
+        <span className="pr-1">Assistant</span>
       </button>
       {modalChat()}
     </QueryClientProvider>

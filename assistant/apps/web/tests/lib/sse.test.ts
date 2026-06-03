@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { splitSseBuffer } from './sse';
+import { splitSseBuffer } from '../../src/lib/sse';
 
 const ev = (o: unknown) => `event: x\ndata: ${JSON.stringify(o)}\n\n`;
 

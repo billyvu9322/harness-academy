@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import type { ChatMessage } from '@assistant/shared/chat';
 import type { Citation } from '@assistant/shared/citations';
-import { messagesToTurns } from './restore';
+import { messagesToTurns } from '../../../src/features/chat/restore';
 
 const citation: Citation = { title: 'Lecture 08', sourcePath: 'l8.md', route: '/lectures/08' };
 

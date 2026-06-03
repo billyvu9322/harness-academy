@@ -6,7 +6,7 @@ import {
   toolLabel,
   TEXT_STEP_ID,
   type TimelineStep,
-} from './agentEvent';
+} from '../../../src/features/chat/agentEvent';
 
 describe('toolLabel', () => {
   test('maps the four known tools', () => {

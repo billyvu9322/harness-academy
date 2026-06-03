@@ -11,8 +11,8 @@ const CATEGORIES = [
 
 const QUESTIONS = [
   'Harness là gì và vì sao quan trọng với AI agent?',
-  'Làm sao thiết kế init.sh để giữ continuity qua nhiều session?',
-  'feature_list.json khác AGENTS.md ở điểm nào?',
+  'Một AI agent harness thường có những thành phần chính nào?',
+  'Người mới nên bắt đầu học agent harness từ đâu?',
 ] as const;
 
 export function WelcomeExamples({ onPick }: WelcomeExamplesProps) {

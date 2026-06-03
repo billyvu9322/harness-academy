@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildContextPrefill, parseWidgetConfig } from './config';
+import { buildContextPrefill, parseWidgetConfig } from '../../src/widget/config';
 
 function el(attrs: Record<string, string>) {
   return { getAttribute: (name: string): string | null => attrs[name] ?? null };
@@ -26,7 +26,6 @@ describe('parseWidgetConfig', () => {
   it('reads data-* attributes used by academy host element', () => {
     const cfg = parseWidgetConfig(
       el({
-        'data-api-base-url': 'https://api.example.com',
         'data-academy-route': '/skills/context-engineering',
         'data-academy-title': 'Context Engineering',
         'data-chat-open': '1',
