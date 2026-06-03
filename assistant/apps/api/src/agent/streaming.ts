@@ -48,6 +48,8 @@ function buildToolDetail(
       return Array.isArray(args.contentTypes) && args.contentTypes.length
         ? args.contentTypes.join(", ")
         : undefined;
+    case "load_skill":
+      return typeof args.name === "string" ? args.name : undefined;
     default:
       return undefined;
   }
@@ -184,8 +186,7 @@ export async function* streamAssistant(
       yield { type: "citation", citation };
     }
 
-    for (const suggestion of buildSuggestions(citations))
-    {
+    for (const suggestion of buildSuggestions(citations)) {
       yield { type: "suggestion", suggestion };
     }
 
@@ -195,7 +196,7 @@ export async function* streamAssistant(
       type: "error",
       message: err instanceof Error ? err.message : "unknown error",
     };
-    
+
     yield { type: "done" };
   }
 }

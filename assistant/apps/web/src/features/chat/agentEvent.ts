@@ -40,6 +40,16 @@ export function toolLabel(tool: string): string {
 }
 
 /**
+ * load_skill is rendered as `Skill '<name>' loaded` so the timeline reads as a
+ * narrative line rather than a generic tool call. The skill name arrives as the
+ * tool's `detail` (args.name from the backend); when missing we degrade to the
+ * plain tool label.
+ */
+function loadSkillLabel(detail: string | undefined): string {
+  return detail ? `Skill '${detail}' loaded` : toolLabel('load_skill');
+}
+
+/**
  * Adapt a raw stream event into a timeline AgentEvent, or null when the event is
  * irrelevant to the timeline. Note: message.started fires once per LLM turn (several
  * per answer) so it is intentionally ignored — the text step is derived from the first
@@ -48,6 +58,9 @@ export function toolLabel(tool: string): string {
 export function toAgentEvent(ev: StreamEvent): AgentEvent | null {
   switch (ev.type) {
     case 'tool.started':
+      if (ev.tool === 'load_skill') {
+        return { type: 'tool_start', name: loadSkillLabel(ev.detail), eventId: ev.callId };
+      }
       return { type: 'tool_start', name: toolLabel(ev.tool), detail: ev.detail, eventId: ev.callId };
     case 'tool.completed':
       return { type: 'tool_done', eventId: ev.callId, result: ev.summary };

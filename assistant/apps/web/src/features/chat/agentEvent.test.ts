@@ -37,6 +37,20 @@ describe('toAgentEvent', () => {
     });
   });
 
+  test("tool.started for load_skill renders as Skill '<name>' loaded with no detail", () => {
+    expect(
+      toAgentEvent({ type: 'tool.started', tool: 'load_skill', callId: 'c3', detail: 'concept-explainer' }),
+    ).toEqual({ type: 'tool_start', name: "Skill 'concept-explainer' loaded", eventId: 'c3' });
+  });
+
+  test('tool.started for load_skill without detail falls back to raw name', () => {
+    expect(toAgentEvent({ type: 'tool.started', tool: 'load_skill', callId: 'c4' })).toEqual({
+      type: 'tool_start',
+      name: 'load_skill',
+      eventId: 'c4',
+    });
+  });
+
   test('tool.completed → tool_done by eventId carrying the summary', () => {
     expect(
       toAgentEvent({ type: 'tool.completed', tool: 'grep_docs', callId: 'c1', summary: '10 matches' }),
