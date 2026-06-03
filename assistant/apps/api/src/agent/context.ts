@@ -9,6 +9,8 @@ export interface AssistantContext {
   reads: DocSection[];
   /** Tool names invoked this run (list_docs/grep_docs/read_doc_section), in order. */
   toolCalls: string[];
+  /** Skill names loaded this run via load_skill — for observability. */
+  loadedSkills: string[];
   /** Language the answer must be written in. */
   userLanguage?: string;
   /** Interaction mode; defaults to 'qa'. The blueprint tool is enabled only in 'harness-design'. */
@@ -23,6 +25,7 @@ export function createAssistantContext(
   return {
     reads: [],
     toolCalls: [],
+    loadedSkills: [],
     userLanguage: opts.userLanguage,
     mode: opts.mode ?? 'qa',
     corrective: opts.corrective,
