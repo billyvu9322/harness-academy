@@ -29,6 +29,7 @@ export function RootLayout({ children }: { children: ReactNode }) {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const location = useLocation();
+  const shouldOpenChat = new URLSearchParams(location.search).get("isChatOpen") === "1";
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -89,6 +90,23 @@ export function RootLayout({ children }: { children: ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <a
+              href="https://github.com/billyvu9322/harness-academy"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub repository"
+              className="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-800"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d="M12 2C6.477 2 2 6.589 2 12.25c0 4.529 2.865 8.372 6.839 9.729.5.095.683-.223.683-.495 0-.244-.009-.89-.014-1.747-2.782.618-3.369-1.375-3.369-1.375-.455-1.18-1.11-1.495-1.11-1.495-.908-.637.069-.624.069-.624 1.004.072 1.532 1.056 1.532 1.056.892 1.566 2.341 1.114 2.91.852.091-.663.349-1.114.635-1.37-2.221-.259-4.556-1.14-4.556-5.074 0-1.121.39-2.037 1.029-2.755-.103-.259-.446-1.301.098-2.713 0 0 .84-.276 2.75 1.052A9.32 9.32 0 0 1 12 6.836a9.3 9.3 0 0 1 2.504.349c1.909-1.328 2.748-1.052 2.748-1.052.546 1.412.203 2.454.1 2.713.64.718 1.027 1.634 1.027 2.755 0 3.944-2.339 4.812-4.566 5.066.359.318.678.944.678 1.903 0 1.374-.012 2.48-.012 2.818 0 .274.18.595.688.494C19.138 20.618 22 16.777 22 12.25 22 6.589 17.523 2 12 2Z" />
+              </svg>
+            </a>
             <button
               type="button"
               onClick={toggleTheme}
@@ -154,6 +172,7 @@ export function RootLayout({ children }: { children: ReactNode }) {
         data-api-base-url={API_BASE_URL}
         data-academy-route={location.pathname}
         data-academy-title={currentDocTitle()}
+        data-chat-open={shouldOpenChat ? "true" : "false"}
       />
     </div>
   );

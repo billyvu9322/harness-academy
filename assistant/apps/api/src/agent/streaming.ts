@@ -146,6 +146,7 @@ export async function* streamAssistant(
 
   const context =
     opts.context ?? createAssistantContext({ userLanguage: opts.userLanguage });
+
   try {
     const input = buildAgentInput(opts.history ?? [], message);
     const result = await run(
@@ -160,20 +161,31 @@ export async function* streamAssistant(
 
     for await (const ev of result) {
       const mapped = mapStreamEvent(ev);
-      if (mapped) yield mapped;
+      if (mapped) {
+        yield mapped;
+      }
     }
+
     await result.completed;
 
     const citations = buildCitations(context.reads);
-    for (const citation of citations) yield { type: "citation", citation };
+
+    for (const citation of citations) {
+      yield { type: "citation", citation };
+    }
+
     for (const suggestion of buildSuggestions(citations))
+    {
       yield { type: "suggestion", suggestion };
+    }
+
     yield { type: "done" };
   } catch (err) {
     yield {
       type: "error",
       message: err instanceof Error ? err.message : "unknown error",
     };
+    
     yield { type: "done" };
   }
 }

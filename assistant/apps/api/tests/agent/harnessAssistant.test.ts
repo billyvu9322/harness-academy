@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { createAssistant } from './harnessAssistant';
+import { createAssistant } from '../../src/agent/harnessAssistant';
 
 describe('createAssistant', () => {
   const { orchestrator } = createAssistant(() => []);

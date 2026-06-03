@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildSystemPrompt } from './prompts';
+import { buildSystemPrompt } from '../../src/agent/prompts';
 
 describe('buildSystemPrompt', () => {
   test('instructs the agent to use the docs tools', () => {

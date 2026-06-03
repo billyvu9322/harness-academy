@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isOriginAllowed, parseAllowedOrigins } from './origins';
+import { isOriginAllowed, parseAllowedOrigins } from '../../src/config/origins';
 
 describe('parseAllowedOrigins', () => {
   it('returns an empty list when none is given', () => {

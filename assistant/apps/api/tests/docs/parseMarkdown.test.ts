@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { parseMarkdown } from './parseMarkdown';
+import { parseMarkdown } from '../../src/docs/parseMarkdown';
 
 const SAMPLE = `---
 title: "Lecture 01 — Vì sao Agent giỏi vẫn fail?"
@@ -36,9 +36,9 @@ describe('parseMarkdown', () => {
 
   test('captures preamble before the first heading as a section with null heading', () => {
     const { sections } = parseMarkdown(SAMPLE);
-    expect(sections[0].heading).toBeNull();
-    expect(sections[0].level).toBe(0);
-    expect(sections[0].text).toContain('Mở đầu không thuộc heading nào.');
+    expect(sections[0]?.heading).toBeNull();
+    expect(sections[0]?.level).toBe(0);
+    expect(sections[0]?.text).toContain('Mở đầu không thuộc heading nào.');
   });
 
   test('splits body into heading-scoped sections with levels', () => {

@@ -6,6 +6,8 @@ export interface WidgetConfig {
   academyRoute?: string;
   /** Current academy doc title, for the context chip + composer prefill. */
   academyTitle?: string;
+  /** Host-controlled initial/open signal for the slide-in panel. */
+  chatOpen?: boolean;
 }
 
 interface AttrSource {
@@ -33,9 +35,11 @@ export function parseWidgetConfig(source: AttrSource): WidgetConfig {
   const apiBaseUrl = firstAttr(source, ['data-api-base-url', 'api-base-url']);
   const academyRoute = firstAttr(source, ['data-academy-route', 'academy-route']);
   const academyTitle = firstAttr(source, ['data-academy-title', 'academy-title']);
+  const chatOpen = firstAttr(source, ['data-chat-open', 'chat-open']);
   if (apiBaseUrl) config.apiBaseUrl = apiBaseUrl;
   if (academyRoute) config.academyRoute = academyRoute;
   if (academyTitle) config.academyTitle = academyTitle;
+  if (chatOpen) config.chatOpen = chatOpen === 'true' || chatOpen === '1';
   return config;
 }
 

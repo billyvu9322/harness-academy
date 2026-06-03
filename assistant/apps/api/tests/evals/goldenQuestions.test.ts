@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GOLDEN_QUESTIONS, findGolden } from './goldenQuestions';
+import { GOLDEN_QUESTIONS, findGolden } from '../../src/evals/goldenQuestions';
 
 describe('GOLDEN_QUESTIONS', () => {
   it('has a meaningful baseline set', () => {
@@ -30,7 +30,7 @@ describe('GOLDEN_QUESTIONS', () => {
   });
 
   it('findGolden resolves by id and returns undefined otherwise', () => {
-    expect(findGolden(GOLDEN_QUESTIONS[0].id)?.id).toBe(GOLDEN_QUESTIONS[0].id);
+    expect(findGolden(GOLDEN_QUESTIONS[0]?.id ?? '')?.id).toBe(GOLDEN_QUESTIONS[0]?.id);
     expect(findGolden('does-not-exist')).toBeUndefined();
   });
 });

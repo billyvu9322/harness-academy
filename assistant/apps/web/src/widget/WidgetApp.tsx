@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ChatPage } from "../components/chat/ChatPage";
 import type { WidgetConfig } from "./config";
@@ -15,7 +15,17 @@ interface WidgetAppProps {
  * scope hint. Trigger button and modal state both live inside the widget.
  */
 export function WidgetApp({ config }: WidgetAppProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(Boolean(config.chatOpen));
+  const lastRequestedOpen = useRef<boolean>(Boolean(config.chatOpen));
+
+  useEffect(() => {
+    const requestedOpen = Boolean(config.chatOpen);
+    // Only react to false -> true transitions from host routing state.
+    if (requestedOpen && !lastRequestedOpen.current) {
+      setOpen(true);
+    }
+    lastRequestedOpen.current = requestedOpen;
+  }, [config.chatOpen]);
 
   const modalChat = () => {
     return (

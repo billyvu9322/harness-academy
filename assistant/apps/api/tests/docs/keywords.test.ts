@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { expandQuery } from './keywords';
+import { expandQuery } from '../../src/docs/keywords';
 
 describe('expandQuery', () => {
   it('keeps the original pattern first', () => {

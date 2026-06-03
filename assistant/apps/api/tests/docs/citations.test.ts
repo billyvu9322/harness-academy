@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { citationSchema } from '@assistant/shared/citations';
-import { toCitation, buildCitations } from './citations';
-import type { DocSection } from './search';
+import { toCitation, buildCitations } from '../../src/docs/citations';
+import type { DocSection } from '../../src/docs/search';
 
 const ROUTED: DocSection = {
   docId: 'academy/content/lectures/03-verify.md',

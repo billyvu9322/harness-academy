@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Citation } from '@assistant/shared/citations';
-import type { GoldenQuestion } from './goldenQuestions';
-import type { JudgeVerdict } from './judge';
-import { aggregate, BASELINE, meetsBaseline, scoreQuestion } from './score';
+import type { GoldenQuestion } from '../../src/evals/goldenQuestions';
+import type { JudgeVerdict } from '../../src/evals/judge';
+import { aggregate, BASELINE, meetsBaseline, scoreQuestion } from '../../src/evals/score';
 
 const cite = (over: Partial<Citation> = {}): Citation => ({
   title: 'Feature list là primitive',

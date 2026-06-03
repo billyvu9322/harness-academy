@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import type { Citation } from '@assistant/shared/citations';
-import { runWithRegenerate } from './regenerate';
+import { runWithRegenerate } from '../../src/agent/regenerate';
 
 const cited: Citation[] = [{ title: 'L08', sourcePath: 'l8.md', route: '/lectures/08' }];
 

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { streamEventSchema } from '@assistant/shared/events';
 import type { Citation } from '@assistant/shared/citations';
-import { mapStreamEvent, buildSuggestions } from './streaming';
+import { mapStreamEvent, buildSuggestions } from '../../src/agent/streaming';
 
 describe('mapStreamEvent', () => {
   test('maps a raw output_text_delta to message.delta', () => {

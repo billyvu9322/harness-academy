@@ -2,8 +2,8 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { buildDocIndex, type DocIndex } from './index';
-import { grepDocs, grepDocsMulti, readDocSection } from './search';
+import { buildDocIndex, type DocIndex } from '../../src/docs/index';
+import { grepDocs, grepDocsMulti, readDocSection } from '../../src/docs/search';
 
 let root: string;
 let index: DocIndex;

@@ -12,12 +12,14 @@ describe('parseWidgetConfig', () => {
         'api-base-url': 'https://api.example.com',
         'academy-route': '/lectures/08-feature-list',
         'academy-title': 'Lecture 08',
+        'chat-open': 'true',
       }),
     );
     expect(cfg).toEqual({
       apiBaseUrl: 'https://api.example.com',
       academyRoute: '/lectures/08-feature-list',
       academyTitle: 'Lecture 08',
+      chatOpen: true,
     });
   });
 
@@ -27,12 +29,14 @@ describe('parseWidgetConfig', () => {
         'data-api-base-url': 'https://api.example.com',
         'data-academy-route': '/skills/context-engineering',
         'data-academy-title': 'Context Engineering',
+        'data-chat-open': '1',
       }),
     );
     expect(cfg).toEqual({
       apiBaseUrl: 'https://api.example.com',
       academyRoute: '/skills/context-engineering',
       academyTitle: 'Context Engineering',
+      chatOpen: true,
     });
   });
 
@@ -44,6 +48,11 @@ describe('parseWidgetConfig', () => {
     const cfg = parseWidgetConfig(el({ 'api-base-url': '  ', 'academy-title': '  Lecture 10  ' }));
     expect(cfg.apiBaseUrl).toBeUndefined();
     expect(cfg.academyTitle).toBe('Lecture 10');
+  });
+
+  it('parses falsey chat-open values as false', () => {
+    const cfg = parseWidgetConfig(el({ 'data-chat-open': 'false' }));
+    expect(cfg.chatOpen).toBe(false);
   });
 });
 

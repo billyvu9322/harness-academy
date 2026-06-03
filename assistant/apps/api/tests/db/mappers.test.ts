@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { conversationSummarySchema, chatMessageSchema } from '@assistant/shared/chat';
-import { toConversationSummary, toMessageDto } from './mappers';
+import { toConversationSummary, toMessageDto } from '../../src/db/mappers';
 
 describe('toConversationSummary', () => {
   test('maps a row and serializes updatedAt to ISO', () => {

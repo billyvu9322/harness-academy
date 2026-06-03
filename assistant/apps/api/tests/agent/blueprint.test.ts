@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildHarnessBlueprint, BLUEPRINT_SECTION_KEYS } from './blueprint';
+import { buildHarnessBlueprint, BLUEPRINT_SECTION_KEYS } from '../../src/agent/blueprint';
 
 describe('buildHarnessBlueprint', () => {
   it('echoes the workflow (trimmed)', () => {

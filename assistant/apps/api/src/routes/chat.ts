@@ -149,6 +149,7 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
         else if (ev.type === "suggestion") suggestions.push(ev.suggestion);
         reply.raw.write(serializeSseEvent(ev));
       }
+
       const messageId = await appendMessage({
         conversationId,
         role: "assistant",
@@ -166,6 +167,7 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
           items: citations,
         }),
       );
+
       await insertTrace({
         conversationId,
         messageId,
@@ -181,7 +183,9 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
       reply.raw.write(
         serializeSseEvent({ type: "error", message: "stream failed" }),
       );
+      
       reply.raw.write(serializeSseEvent({ type: "done" }));
+      
       await insertTrace({
         conversationId,
         summary: buildTraceSummary({

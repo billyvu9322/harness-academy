@@ -7,6 +7,92 @@ widget), `packages/shared` (Zod contracts).
 
 Architecture & request flow: see [AGENTS.md](./AGENTS.md).
 
+## Streaming request flow
+
+```text
+[ apps/web ]
+  Chat composer
+    -> useChatStream.tsx
+    -> chatApi.ts
+    -> POST /api/chat/stream
+    -> SSE reducer (lib/sse.ts + agentEvent.ts)
+
+         |
+         v
+
+[ apps/api/src/routes/chat.ts ]
+  validate chatRequestSchema
+    -> resolveConversation()
+    -> getHistoryTurns()
+    -> appendMessage(user)
+    -> createAssistantContext()
+    -> streamAssistant(message, { history, context })
+    -> appendMessage(assistant)
+    -> insertTrace(buildTraceSummary(...))
+
+         |
+         v
+
+[ apps/api/src/agent/streaming.ts ]
+  checkInput(message)
+    -> buildAgentInput(history, message)
+    -> run(assistant.orchestrator, input, { context, stream: true, maxTurns: 8 })
+    -> mapStreamEvent(...) -> SSE events
+    -> buildCitations(context.reads)
+    -> buildSuggestions(citations)
+    -> done
+
+         |
+         v
+
+[ apps/api/src/agent/harnessAssistant.ts ]
+  Agent<AssistantContext>("HarnessOrchestrator")
+    -> system prompt from prompts.ts
+    -> input guardrail from guardrails.ts
+    -> tools:
+       - list_docs
+       - grep_docs
+       - read_doc_section
+       - harness_blueprint (mode-gated)
+
+         |
+         v
+
+[ apps/api/src/agent/tools.ts ]
+  list_docs
+    -> TOC only: docId, title, route, contentType, headings
+  grep_docs
+    -> expandQuery(pattern) -> grepDocsMulti(...)
+  read_doc_section
+    -> exact section text
+    -> records section into context.reads for citation provenance
+
+         |
+         v
+
+[ apps/api/src/agent/runtime.ts + apps/api/src/docs/* ]
+  getIndex()
+    -> buildDocIndex(DOCS_ROOT) once
+    -> keep parsed allowlisted corpus in memory
+  search.ts
+    -> ranked grep over parsed sections
+    -> exact section lookup by docId + heading
+
+         |
+         v
+
+[ apps/api/src/agent/llm.ts ]
+  routerClient
+    -> OpenAI-compatible router (Chat Completions)
+    -> used by @openai/agents orchestrator
+```
+
+Notes:
+
+- `list_docs` does **not** return full markdown bodies. It returns TOC metadata plus heading outlines.
+- Full text enters model context only through `read_doc_section`, and only for sections the agent explicitly opens.
+- Citations are derived from `context.reads`, so only actually-read sections can be cited.
+
 ---
 
 ## Prerequisites

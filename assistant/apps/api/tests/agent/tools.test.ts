@@ -3,8 +3,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { RunContext } from '@openai/agents';
-import { buildDocIndex, type DocIndex } from '../docs/index';
-import { createDocsTools } from './tools';
+import { buildDocIndex, type DocIndex } from '../../src/docs/index';
+import { createDocsTools } from '../../src/agent/tools';
 
 let root: string;
 let index: DocIndex;

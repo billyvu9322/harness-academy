@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import type { AssistantContext } from '../agent/context';
-import type { DocSection } from '../docs/search';
-import { buildTraceSummary } from './trace';
+import type { AssistantContext } from '../../src/agent/context';
+import type { DocSection } from '../../src/docs/search';
+import { buildTraceSummary } from '../../src/observability/trace';
 
 function section(docId: string, heading: string | null): DocSection {
   return { docId, title: docId, contentType: 'lecture', sourcePath: `${docId}`, heading, text: 'x' };
@@ -10,6 +10,7 @@ function section(docId: string, heading: string | null): DocSection {
 const ctx: AssistantContext = {
   reads: [section('a.md', 'H1'), section('a.md', 'H2'), section('b.md', 'H1')],
   toolCalls: ['list_docs', 'grep_docs', 'read_doc_section', 'read_doc_section'],
+  mode: 'qa',
 };
 
 describe('buildTraceSummary', () => {

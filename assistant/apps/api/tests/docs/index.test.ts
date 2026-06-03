@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { buildDocIndex, listDocs } from './index';
+import { buildDocIndex, listDocs } from '../../src/docs/index';
 
 let root: string;
 
@@ -77,6 +77,6 @@ describe('listDocs', () => {
     const index = buildDocIndex(root);
     const onlyLectures = listDocs(index, ['lecture']);
     expect(onlyLectures).toHaveLength(1);
-    expect(onlyLectures[0].slug).toBe('01-intro');
+    expect(onlyLectures[0]?.slug).toBe('01-intro');
   });
 });

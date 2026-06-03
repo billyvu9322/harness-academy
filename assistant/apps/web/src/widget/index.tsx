@@ -34,7 +34,7 @@ class HarnessAssistantElement extends HTMLElement {
   private mountPoint: HTMLDivElement | null = null;
 
   static get observedAttributes(): string[] {
-    return ['data-api-base-url', 'data-academy-route', 'data-academy-title'];
+    return ['data-api-base-url', 'data-academy-route', 'data-academy-title', 'data-chat-open'];
   }
 
   connectedCallback(): void {

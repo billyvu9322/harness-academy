@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { buildAgentInput } from './history';
+import { buildAgentInput } from '../../src/agent/history';
 
 describe('buildAgentInput', () => {
   test('appends the new user message after prior history', () => {

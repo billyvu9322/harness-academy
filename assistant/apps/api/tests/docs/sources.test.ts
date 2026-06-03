@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { listSourceFiles } from './sources';
+import { listSourceFiles } from '../../src/docs/sources';
 
 let root: string;
 
@@ -49,9 +49,9 @@ describe('listSourceFiles', () => {
     const files = listSourceFiles(root);
     const byType = (t: string) => files.filter((f) => f.contentType === t);
     expect(byType('lecture')).toHaveLength(2);
-    expect(byType('project')[0].route).toBe('/projects/p1');
-    expect(byType('skill')[0].route).toBe('/skills/s1');
-    expect(byType('reference')[0].route).toBe('/references/r1');
+    expect(byType('project')[0]?.route).toBe('/projects/p1');
+    expect(byType('skill')[0]?.route).toBe('/skills/s1');
+    expect(byType('reference')[0]?.route).toBe('/references/r1');
   });
 
   test('core docs are core_doc with no route', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { checkInput, checkOutput } from './guardrails';
+import { checkInput, checkOutput } from '../../src/agent/guardrails';
 
 describe('checkInput', () => {
   test('passes a normal question', () => {
