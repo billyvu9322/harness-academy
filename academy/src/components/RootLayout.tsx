@@ -29,7 +29,7 @@ export function RootLayout({ children }: { children: ReactNode }) {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const location = useLocation();
-  const shouldOpenChat = new URLSearchParams(location.search).get("isChatOpen") === "1";
+  const shouldOpenChat = new URLSearchParams(location.search).has("isChatOpen");
 
   useEffect(() => {
     setSidebarOpen(false);
