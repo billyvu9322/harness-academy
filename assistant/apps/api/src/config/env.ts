@@ -58,6 +58,8 @@ const envSchema = z.object({
     .string()
     .min(1)
     .default(resolve(process.cwd(), "..", "..", "..")),
+  // Root holding skill packets (<root>/<name>/SKILL.md). Defaults to apps/api/skills.
+  SKILLS_ROOT: z.string().min(1).default(resolve(process.cwd(), "skills")),
   // LLM router (OpenAI-compatible). Key loaded from .env only — never committed.
   LLM_BASE_URL: z.url().default("https://9router.nimo.io.vn/v1"),
   LLM_API_KEY: z.string().min(1),
@@ -89,6 +91,7 @@ export function parseEnv(
     NODE_ENV: env.NODE_ENV,
     PORT: env.PORT,
     DOCS_ROOT: env.DOCS_ROOT,
+    SKILLS_ROOT: env.SKILLS_ROOT,
     LLM_BASE_URL: env.LLM_BASE_URL,
     LLM_API_KEY: env.LLM_API_KEY,
     DATABASE_URL: env.DATABASE_URL,

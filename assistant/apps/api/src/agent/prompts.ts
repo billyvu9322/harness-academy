@@ -1,4 +1,5 @@
 import type { AssistantMode } from './context';
+import type { SkillMeta } from './skills/loader';
 
 export interface PromptOptions {
   /** Language the final answer must be written in. */
@@ -7,6 +8,8 @@ export interface PromptOptions {
   mode?: AssistantMode;
   /** Regenerate pass: push a stronger grounding directive. */
   corrective?: boolean;
+  /** Meta-only skill list (name + description). Bodies are loaded lazily via load_skill. */
+  skills?: SkillMeta[];
 }
 
 const DEFAULT_LANGUAGE = 'Vietnamese';
@@ -16,6 +19,17 @@ const DESIGN_LINE =
 
 const CORRECTIVE_LINE =
   'LƯU Ý SỬA LỖI: Câu trả lời trước thiếu trích dẫn. Bạn BẮT BUỘC gọi read_doc_section để đọc đoạn liên quan trước khi trả lời, và chỉ khẳng định điều có trong đoạn đã đọc.';
+
+function buildSkillsBlock(skills: SkillMeta[]): string {
+  const lines = skills.map(
+    (s) => `- ${s.name}: ${s.description}${s.whenToUse ? ` (${s.whenToUse})` : ''}`,
+  );
+  return [
+    'KỸ NĂNG CHUYÊN BIỆT (skills) — chỉ nạp khi cần:',
+    'Khi câu hỏi khớp mô tả một skill dưới đây, GỌI tool `load_skill` với đúng tên skill để nạp hướng dẫn chi tiết TRƯỚC khi trả lời. Không đoán nội dung skill khi chưa nạp.',
+    ...lines,
+  ].join('\n');
+}
 
 /**
  * System instructions for the Harness Orchestrator. The agent is a focused harness-engineering
@@ -38,5 +52,6 @@ export function buildSystemPrompt(opts: PromptOptions = {}): string {
     'Trình bày ngắn gọn, có cấu trúc, đúng trọng tâm câu hỏi.',
     ...(opts.mode === 'harness-design' ? ['', DESIGN_LINE] : []),
     ...(opts.corrective ? ['', CORRECTIVE_LINE] : []),
+    ...(opts.skills && opts.skills.length ? ['', buildSkillsBlock(opts.skills)] : []),
   ].join('\n');
 }

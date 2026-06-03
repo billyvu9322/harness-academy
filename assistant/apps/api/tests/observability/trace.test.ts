@@ -10,6 +10,7 @@ function section(docId: string, heading: string | null): DocSection {
 const ctx: AssistantContext = {
   reads: [section('a.md', 'H1'), section('a.md', 'H2'), section('b.md', 'H1')],
   toolCalls: ['list_docs', 'grep_docs', 'read_doc_section', 'read_doc_section'],
+  loadedSkills: [],
   mode: 'qa',
 };
 

@@ -7,6 +7,8 @@ import { initLlm } from "./llm";
 import { createDocsTools } from "./tools";
 import { buildSystemPrompt } from "./prompts";
 import { checkInput } from "./guardrails";
+import { loadSkillRegistry, skillMetas } from "./skills/loader";
+import { createLoadSkillTool } from "./skills/loadSkillTool";
 import {
   createAssistantContext,
   type AssistantContext,
@@ -45,6 +47,9 @@ export function createAssistant(getIndex: () => DocIndex) {
     harnessBlueprintTool,
   } = createDocsTools(getIndex);
 
+  const skillRegistry = loadSkillRegistry(env.SKILLS_ROOT);
+  const skills = skillMetas(skillRegistry);
+
   const orchestrator = new Agent<AssistantContext>({
     name: "HarnessOrchestrator",
     model: env.OPENAI_CHAT_MODEL,
@@ -52,12 +57,14 @@ export function createAssistant(getIndex: () => DocIndex) {
       buildSystemPrompt({
         userLanguage: rc.context?.userLanguage,
         mode: rc.context?.mode,
+        skills,
       }),
     tools: [
       listDocsTool,
       grepDocsTool,
       readDocSectionTool,
       harnessBlueprintTool,
+      createLoadSkillTool(skillRegistry),
     ],
     inputGuardrails: [
       {
