@@ -115,10 +115,9 @@ cp .env.example .env      # then fill in the values (see table below)
 
 | Var | Required | Default | Used by | Purpose |
 |-----|----------|---------|---------|---------|
-| `LLM_API_KEY` | ✅ | — | api | Router API key (secret — never commit) |
-| `LLM_BASE_URL` | | `https://9router.nimo.io.vn/v1` | api | OpenAI-compatible router base URL |
-| `OPENAI_CHAT_MODEL` | | `cx/gpt-5.5` | api | Chat model id |
-| `OPENAI_EMBEDDING_MODEL` | | `text-embedding-3-small` | api | Reserved (no embeddings in phase 1) |
+| `LLM_API_KEY` | ✅ | — | api | Router API key |
+| `LLM_BASE_URL` | | `` | api | OpenAI-compatible router base URL |
+| `OPENAI_CHAT_MODEL` | | `` | api | Chat model id |
 | `DATABASE_URL` | ✅ | `postgres://postgres:postgres@localhost:5432/harness_assistant` | api | Postgres connection |
 | `DOCS_ROOT` | | repo root | api | Where the indexable corpus lives (set to `/app/corpus` in the image) |
 | `PORT` | | `3001` (local) / `5001` (compose) | api | HTTP port |
@@ -138,7 +137,7 @@ Start Postgres (local), run migrations, then the dev servers:
 ```bash
 # Postgres for local dev (maps host 5432 → container 5432; matches .env.example)
 docker run -d --name harness-pg -p 5432:5432 \
-  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_USER={USER} -e POSTGRES_PASSWORD={PASSWORD} \
   -e POSTGRES_DB=harness_assistant pgvector/pgvector:pg17
 
 pnpm db:migrate            # apply Drizzle migrations
