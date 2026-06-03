@@ -6,6 +6,7 @@ import { initLlm } from "./llm";
 import { assistant } from "./runtime";
 import { buildCitations } from "../docs/citations";
 import { checkInput } from "./guardrails";
+import { classifyInput, refusalFor } from "./relevance";
 import { createAssistantContext, type AssistantContext } from "./context";
 import { buildAgentInput, type HistoryTurn } from "./history";
 
@@ -140,6 +141,15 @@ export async function* streamAssistant(
   const input = checkInput(message);
   if (input.tripwire) {
     yield { type: "error", message: `input rejected: ${input.reason}` };
+    yield { type: "done" };
+    return;
+  }
+
+  // Relevance/safety classifier (cheap pre-pass). Refuse off-topic / injection here
+  // so the expensive tool loop never runs. Fails open to SAFE on any classifier error.
+  const label = await classifyInput(message);
+  if (label !== "SAFE") {
+    yield { type: "error", message: refusalFor(label) };
     yield { type: "done" };
     return;
   }

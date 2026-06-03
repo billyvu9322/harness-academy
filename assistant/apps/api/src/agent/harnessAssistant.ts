@@ -7,6 +7,7 @@ import { initLlm } from "./llm";
 import { createDocsTools } from "./tools";
 import { buildSystemPrompt } from "./prompts";
 import { checkInput } from "./guardrails";
+import { classifyInput, refusalFor } from "./relevance";
 import { loadSkillRegistry, skillMetas } from "./skills/loader";
 import { createLoadSkillTool } from "./skills/loadSkillTool";
 import {
@@ -90,6 +91,19 @@ export function createAssistant(getIndex: () => DocIndex) {
       userLanguage: opts.userLanguage,
       mode: opts.mode,
     });
+
+    // Relevance/safety pre-pass: refuse off-topic / injection without running the
+    // tool loop. Fails open to SAFE on any classifier error.
+    const label = await classifyInput(message);
+    if (label !== "SAFE") {
+      return {
+        answer: refusalFor(label),
+        citations: [],
+        regenerated: false,
+        latencyMs: Date.now() - startedAt,
+        context: lastContext,
+      };
+    }
 
     const result = await runWithRegenerate(async (corrective) => {
       const context = createAssistantContext({
