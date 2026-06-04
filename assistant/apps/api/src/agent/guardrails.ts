@@ -1,9 +1,36 @@
+export type GuardReason =
+  | 'empty'
+  | 'too_long'
+  | 'injection'
+  | 'no_citation'
+  | 'external_claim';
+
 export interface GuardResult {
   tripwire: boolean;
-  reason?: 'empty' | 'too_long' | 'injection' | 'no_citation' | 'external_claim';
+  reason?: GuardReason;
 }
 
-const MAX_INPUT_CHARS = 4000;
+/** Friendly Vietnamese refusal text for a tripwire reason — surfaced to end users. */
+export function friendlyReason(reason: GuardReason | undefined): string {
+  switch (reason) {
+    case 'empty':
+      return 'Câu hỏi trống. Hãy nhập nội dung trước khi gửi.';
+    case 'too_long':
+      return 'Câu hỏi quá dài. Hãy rút gọn câu hỏi hoặc bắt đầu cuộc trò chuyện mới (New chat) để tiếp tục.';
+    case 'injection':
+      return 'Yêu cầu bị từ chối vì lý do an toàn.';
+    case 'external_claim':
+    case 'no_citation':
+      return 'Câu trả lời không bám tài liệu nội bộ. Hãy thử diễn đạt lại câu hỏi.';
+    default:
+      return 'Yêu cầu không hợp lệ.';
+  }
+}
+
+// Per-message cap (single user turn). Set high because long history is handled separately
+// by compactIfNeeded() in compact.ts — this guardrail must NOT trip on an aggregate of
+// many turns. Anything over this for a single message is almost certainly a paste-bomb.
+const MAX_INPUT_CHARS = 64000;
 
 // System-override / prompt-injection attempts (VN + EN).
 const INJECTION_RE =

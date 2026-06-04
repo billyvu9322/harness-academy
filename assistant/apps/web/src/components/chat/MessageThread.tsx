@@ -1,8 +1,11 @@
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, useLayoutEffect, useRef, type ReactNode } from 'react';
 import type { Citation } from '@assistant/shared/citations';
 import { UserMessage } from './UserMessage';
 import { AssistantMessage } from './AssistantMessage';
 import type { TimelineStep } from '../../features/chat/agentEvent';
+
+/** Pixels from the bottom that still count as "at bottom" for sticky auto-scroll. */
+const STICK_THRESHOLD_PX = 80;
 
 export type Turn =
   | { id: string; role: 'user'; text: string }
@@ -22,6 +25,8 @@ export type Turn =
       timelineDone?: boolean;
       /** Wall-clock duration of the turn in ms, used for the "Done in Ns" summary (U7). */
       timelineDurationMs?: number;
+      /** True when the user pressed Stop mid-stream; renders a "Đã dừng" badge. */
+      stopped?: boolean;
     };
 
 interface MessageThreadProps {
@@ -36,8 +41,30 @@ function delayFor(index: number): string | undefined {
 }
 
 export function MessageThread({ turns, onVote }: MessageThreadProps) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  // Sticky auto-scroll: stay pinned to the bottom while streaming, unless the user
+  // has scrolled up to read earlier content. Re-engages once they return near the bottom.
+  const stickyRef = useRef(true);
+
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !stickyRef.current) return;
+    el.scrollTop = el.scrollHeight;
+  }, [turns]);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    stickyRef.current = distanceFromBottom <= STICK_THRESHOLD_PX;
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto flex flex-col items-center">
+    <div
+      ref={scrollRef}
+      onScroll={handleScroll}
+      className="flex-1 overflow-y-auto flex flex-col items-center"
+    >
       <div className="w-full max-w-2xl px-gutter py-8 flex flex-col gap-8">
         {turns.map((turn, index) => (
           <Fragment key={turn.id}>
@@ -54,6 +81,7 @@ export function MessageThread({ turns, onVote }: MessageThreadProps) {
                 timeline={turn.timeline}
                 timelineDone={turn.timelineDone}
                 timelineDurationMs={turn.timelineDurationMs}
+                stopped={turn.stopped}
                 animationDelay={delayFor(index)}
                 onVote={onVote}
               />

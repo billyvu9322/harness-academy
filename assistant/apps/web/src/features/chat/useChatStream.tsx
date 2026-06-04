@@ -10,11 +10,7 @@ import {
   postFeedback,
 } from "./chatApi";
 import { messagesToTurns } from "./restore";
-import {
-  addOwnedId,
-  clearOwnedIds,
-  loadOwnedIds,
-} from "./ownedConversations";
+import { addOwnedId, clearOwnedIds, loadOwnedIds } from "./ownedConversations";
 import { readSseStream } from "../../lib/sse";
 import { nextStatus, STATUS_THINKING } from "../../lib/agentStatus";
 import {
@@ -46,7 +42,11 @@ interface ChatStreamState {
   turns: Turn[];
   suggestions: Suggestion[];
   error: string | null;
+  /** Machine-readable code for the last error, when the server provided one. */
+  errorCode: string | null;
   submit: (prompt: string) => Promise<void>;
+  /** Abort the in-flight stream. No-op when no stream is active. */
+  stop: () => void;
   vote: (messageId: string, vote: "up" | "down") => void;
   newChat: () => void;
   /** This browser's past conversations, most-recent-first (hybrid history). */
@@ -83,10 +83,15 @@ export function useChatStream(): ChatStreamState {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<ConversationSummary[]>([]);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
   const conversationId = useRef<string | undefined>(undefined);
+  // Controller for the in-flight stream. Allows `stop()` to abort fetch + SSE iteration.
+  const abortRef = useRef<AbortController | null>(null);
 
   // Fetch summaries for every conversation, then keep only the ones this browser owns
   // (hybrid scoping — see ownedConversations.ts). Sorted most-recent-first by the server.
@@ -134,6 +139,7 @@ export function useChatStream(): ChatStreamState {
 
   async function submit(prompt: string) {
     setError(null);
+    setErrorCode(null);
     setSuggestions([]);
     setIsLoading(true);
 
@@ -171,15 +177,24 @@ export function useChatStream(): ChatStreamState {
       );
     };
 
+    // Fresh controller per submit. Stored on a ref so stop() can reach it.
+    const ac = new AbortController();
+    abortRef.current = ac;
+
     try {
-      const response = await postChatMessage({
-        message: prompt,
-        mode: "academy",
-        ...(conversationId.current
-          ? { conversationId: conversationId.current }
-          : {}),
-      });
+      const response = await postChatMessage(
+        {
+          message: prompt,
+          mode: "academy",
+          ...(conversationId.current
+            ? { conversationId: conversationId.current }
+            : {}),
+        },
+        ac.signal,
+      );
+
       const cid = response.headers.get("X-Conversation-Id");
+
       if (cid) {
         const isNew = conversationId.current !== cid;
         conversationId.current = cid;
@@ -191,8 +206,10 @@ export function useChatStream(): ChatStreamState {
         // A freshly-minted conversation isn't in the history list yet — pull it in.
         if (isNew) void refreshHistory();
       }
-      if (!response.ok || !response.body)
+
+      if (!response.ok || !response.body) {
         throw new Error(`stream failed (${response.status})`);
+      }
 
       for await (const ev of readSseStream(response)) {
         // Did this event change anything the user sees? Only then do we spend a paint frame.
@@ -217,6 +234,8 @@ export function useChatStream(): ChatStreamState {
             break;
           case "error":
             setError(ev.message);
+            // `code` is optional on the wire — fall back to null when the server didn't tag it.
+            setErrorCode((ev as { code?: string }).code ?? "unknown");
             break;
           case "done":
             break;
@@ -242,13 +261,20 @@ export function useChatStream(): ChatStreamState {
         }
         if (dirty) await nextPaint();
       }
+
       patchAssistant({ status: null, showFeedback: true });
       setSuggestions(collectedSuggestions);
     } catch (err) {
-      patchAssistant({ status: null });
-      setError(
-        err instanceof Error ? err.message : "Đã có lỗi khi gọi assistant.",
-      );
+      // User pressed Stop: fetch / SSE iterator rejects with AbortError. Treat as a clean
+      // termination — no error banner, just mark the turn as stopped so the UI can label it.
+      if (ac.signal.aborted) {
+        patchAssistant({ status: null, stopped: true });
+      } else {
+        patchAssistant({ status: null });
+        setError(
+          err instanceof Error ? err.message : "Đã có lỗi khi gọi assistant.",
+        );
+      }
     } finally {
       setIsLoading(false);
       // Collapse the timeline to its summary regardless of how the turn ended (U7).
@@ -256,7 +282,13 @@ export function useChatStream(): ChatStreamState {
         timelineDone: true,
         timelineDurationMs: Date.now() - startedAt,
       });
+      if (abortRef.current === ac) abortRef.current = null;
     }
+  }
+
+  /** Abort the in-flight stream. Safe to call even when no stream is active. */
+  function stop() {
+    abortRef.current?.abort();
   }
 
   // Start a fresh conversation: drop the in-memory thread and the persisted id so the
@@ -268,6 +300,7 @@ export function useChatStream(): ChatStreamState {
     setTurns([]);
     setSuggestions([]);
     setError(null);
+    setErrorCode(null);
   }
 
   // Load a stored conversation into the thread, replacing whatever is shown.
@@ -307,7 +340,9 @@ export function useChatStream(): ChatStreamState {
     turns,
     suggestions,
     error,
+    errorCode,
     submit,
+    stop,
     vote,
     newChat,
     history,

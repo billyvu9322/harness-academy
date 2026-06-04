@@ -4,6 +4,7 @@ import type { Citation } from "@assistant/shared/citations";
 import type { Suggestion } from "@assistant/shared/suggestions";
 import { assistant } from "../agent/runtime";
 import { streamAssistant } from "../agent/streaming";
+import { compactIfNeeded } from "../agent/compact";
 import { createAssistantContext } from "../agent/context";
 import { buildTraceSummary } from "../observability/trace";
 import { serializeSseEvent } from "../rag/placeholder";
@@ -43,7 +44,10 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
     const startedAt = Date.now();
 
     try {
-      const history = await getHistoryTurns(conversationId);
+      const rawHistory = await getHistoryTurns(conversationId);
+      // Compact older turns into a summary when the cumulative history grows large —
+      // prevents the agent input from bloating across long sessions.
+      const history = await compactIfNeeded(rawHistory);
       await appendMessage({ conversationId, role: "user", content: message });
       const result = await assistant.runMessage(message, {
         userLanguage: "Vietnamese",
@@ -100,7 +104,10 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
     }
     const { message, conversationId: reqId } = parsed.data;
     const conversationId = await resolveConversation(reqId, message);
-    const history = await getHistoryTurns(conversationId);
+    const rawHistory = await getHistoryTurns(conversationId);
+    // Compact older turns into a summary when the cumulative history grows large —
+    // prevents the agent input from bloating across long sessions.
+    const history = await compactIfNeeded(rawHistory);
     await appendMessage({ conversationId, role: "user", content: message });
 
     const context = createAssistantContext({ userLanguage: "Vietnamese" });
@@ -135,6 +142,13 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
     reply.raw.flushHeaders();
     reply.raw.socket?.setNoDelay(true);
 
+    // Per-request AbortController. Fires when the client socket closes — either the user
+    // pressed Stop (fetch aborted on the client) or they navigated away. Propagated into
+    // streamAssistant so the agent run is cancelled instead of running to completion uselessly.
+    const ac = new AbortController();
+    const onClose = () => ac.abort();
+    request.raw.on("close", onClose);
+
     let answer = "";
     const citations: Citation[] = [];
     const suggestions: Suggestion[] = [];
@@ -143,11 +157,38 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
         userLanguage: "Vietnamese",
         history,
         context,
+        signal: ac.signal,
       })) {
+        if (ac.signal.aborted) break;
         if (ev.type === "message.delta") answer += ev.delta;
         else if (ev.type === "citation") citations.push(ev.citation);
         else if (ev.type === "suggestion") suggestions.push(ev.suggestion);
-        reply.raw.write(serializeSseEvent(ev));
+        // Socket may have half-closed between events; writing then throws — guard it.
+        if (!reply.raw.writableEnded) reply.raw.write(serializeSseEvent(ev));
+      }
+
+      if (ac.signal.aborted) {
+        // Persist the partial answer (if any) so reloading the conversation shows what the
+        // user saw on screen, with a marker so they know it was cut short.
+        if (answer.trim().length > 0) {
+          await appendMessage({
+            conversationId,
+            role: "assistant",
+            content: `${answer}\n\n_(đã dừng)_`,
+            citations,
+            suggestions,
+          });
+        }
+        await insertTrace({
+          conversationId,
+          summary: buildTraceSummary({
+            context,
+            latencyMs: Date.now() - startedAt,
+            status: "ok",
+            regenerated: false,
+          }),
+        });
+        return;
       }
 
       const messageId = await appendMessage({
@@ -197,7 +238,8 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
         }),
       });
     } finally {
-      reply.raw.end();
+      request.raw.off("close", onClose);
+      if (!reply.raw.writableEnded) reply.raw.end();
     }
   });
 

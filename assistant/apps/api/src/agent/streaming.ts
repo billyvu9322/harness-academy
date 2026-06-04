@@ -5,7 +5,7 @@ import type { Suggestion } from "@assistant/shared/suggestions";
 import { initLlm } from "./llm";
 import { assistant } from "./runtime";
 import { buildCitations } from "../docs/citations";
-import { checkInput } from "./guardrails";
+import { checkInput, friendlyReason } from "./guardrails";
 import { classifyInput, refusalFor } from "./relevance";
 import { createAssistantContext, type AssistantContext } from "./context";
 import { buildAgentInput, type HistoryTurn } from "./history";
@@ -131,6 +131,9 @@ export interface StreamOptions {
   history?: HistoryTurn[];
   /** Caller-owned context so it can read reads/toolCalls for a trace after the stream ends. */
   context?: AssistantContext;
+  /** Abort signal: when fired (client disconnect / Stop button) the agent run is cancelled
+   *  and the generator exits without yielding further events. */
+  signal?: AbortSignal;
 }
 
 /** Drive a streamed agent run and yield typed app events. */
@@ -142,7 +145,15 @@ export async function* streamAssistant(
 
   const input = checkInput(message);
   if (input.tripwire) {
-    yield { type: "error", message: `input rejected: ${input.reason}` };
+    // Friendly Vietnamese message + machine-readable code so the UI can branch
+    // (e.g. surface a "Bắt đầu chat mới" CTA when the per-message cap is hit).
+    const code =
+      input.reason === "too_long" ||
+      input.reason === "empty" ||
+      input.reason === "injection"
+        ? input.reason
+        : "unknown";
+    yield { type: "error", message: friendlyReason(input.reason), code };
     yield { type: "done" };
     return;
   }
@@ -151,13 +162,20 @@ export async function* streamAssistant(
   // so the expensive tool loop never runs. Fails open to SAFE on any classifier error.
   const label = await classifyInput(message);
   if (label !== "SAFE") {
-    yield { type: "error", message: refusalFor(label) };
+    yield {
+      type: "error",
+      message: refusalFor(label),
+      code: label === "OFF_TOPIC" ? "off_topic" : "injection",
+    };
     yield { type: "done" };
     return;
   }
 
   const context =
     opts.context ?? createAssistantContext({ userLanguage: opts.userLanguage });
+
+  // Early exit if the caller aborted before we even started the agent run.
+  if (opts.signal?.aborted) return;
 
   try {
     const input = buildAgentInput(opts.history ?? [], message);
@@ -168,10 +186,14 @@ export async function* streamAssistant(
         context,
         stream: true,
         maxTurns: MAX_TURNS,
+        signal: opts.signal,
       },
     );
 
     for await (const ev of result) {
+      // Abort: stop forwarding events. The SDK also rejects `result.completed` on signal,
+      // but checking here lets us bail out the moment between deltas.
+      if (opts.signal?.aborted) return;
       const mapped = mapStreamEvent(ev);
       if (mapped) {
         yield mapped;
@@ -192,6 +214,9 @@ export async function* streamAssistant(
 
     yield { type: "done" };
   } catch (err) {
+    // Aborts surface as DOMException/Error("aborted") from the SDK — swallow silently so the
+    // caller can finalize the partial response without a spurious error frame.
+    if (opts.signal?.aborted) return;
     yield {
       type: "error",
       message: err instanceof Error ? err.message : "unknown error",

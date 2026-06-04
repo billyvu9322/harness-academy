@@ -6,13 +6,17 @@ import type {
 } from '@assistant/shared/chat';
 import { getApiBaseUrl } from '../../lib/runtimeConfig';
 
-export async function postChatMessage(input: ChatRequest): Promise<Response> {
+export async function postChatMessage(
+  input: ChatRequest,
+  signal?: AbortSignal,
+): Promise<Response> {
   return fetch(`${getApiBaseUrl()}/api/chat/stream`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(input),
+    signal,
   });
 }
 

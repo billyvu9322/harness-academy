@@ -3,7 +3,7 @@ import type { StreamEvent } from "@assistant/shared/events";
 /** Inline status shown while the agent is working but no answer text has streamed yet. */
 export const STATUS_THINKING = "Thinking…";
 /** Inline status shown once answer tokens start streaming. */
-export const STATUS_ANSWERING = "Đang soạn câu trả lời…";
+export const STATUS_ANSWERING = "Generating response";
 
 const TOOL_LABELS: Record<string, string> = {
   list_docs: "Đang xem danh mục tài liệu…",

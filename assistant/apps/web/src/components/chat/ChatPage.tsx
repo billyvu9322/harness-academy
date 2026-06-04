@@ -18,7 +18,9 @@ export function ChatPage({ onClose, contextLabel }: ChatPageProps = {}) {
     turns,
     suggestions,
     error,
+    errorCode,
     submit,
+    stop,
     vote,
     newChat,
     history,
@@ -55,7 +57,7 @@ export function ChatPage({ onClose, contextLabel }: ChatPageProps = {}) {
                 <SuggestionChips suggestions={suggestions} onSelect={submit} />
               </div>
             ) : null}
-            <ChatFollowUpComposer isLoading={isLoading} onSubmit={submit} />
+            <ChatFollowUpComposer isLoading={isLoading} onSubmit={submit} onStop={stop} />
           </footer>
         </>
       ) : (
@@ -66,9 +68,18 @@ export function ChatPage({ onClose, contextLabel }: ChatPageProps = {}) {
       {error ? (
         <div
           role="alert"
-          className="absolute bottom-24 left-1/2 -translate-x-1/2 max-w-2xl w-[calc(100%-32px)] rounded-lg border border-error bg-surface-container-lowest text-error px-4 py-2 text-body-md shadow-md"
+          className="absolute bottom-24 left-1/2 -translate-x-1/2 max-w-2xl w-[calc(100%-32px)] rounded-lg border border-error bg-surface-container-lowest text-error px-4 py-2 text-body-md shadow-md flex items-center gap-3"
         >
-          {error}
+          <span className="flex-1">{error}</span>
+          {errorCode === "too_long" ? (
+            <button
+              type="button"
+              onClick={newChat}
+              className="shrink-0 px-3 py-1.5 rounded-md border border-error text-error text-[12px] font-medium hover:bg-error hover:text-on-error transition-colors"
+            >
+              Bắt đầu chat mới
+            </button>
+          ) : null}
         </div>
       ) : null}
     </main>

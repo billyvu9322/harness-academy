@@ -1,11 +1,12 @@
-import type { ReactNode } from 'react';
-import type { Citation } from '@assistant/shared/citations';
-import { RelatedLinks } from './RelatedLinks';
-import { MessageFeedback } from './MessageFeedback';
-import { AssistantToolStatus } from './AssistantToolStatus';
-import { AgentTimeline } from './AgentTimeline';
-import { Markdown } from './Markdown';
-import type { TimelineStep } from '../../features/chat/agentEvent';
+import type { ReactNode } from "react";
+import type { Citation } from "@assistant/shared/citations";
+import { RelatedLinks } from "./RelatedLinks";
+import { MessageFeedback } from "./MessageFeedback";
+import { AssistantToolStatus } from "./AssistantToolStatus";
+import { AgentTimeline } from "./AgentTimeline";
+import { Markdown } from "./Markdown";
+import type { TimelineStep } from "../../features/chat/agentEvent";
+import { STATUS_ANSWERING } from "../../lib/agentStatus";
 
 interface AssistantMessageProps {
   id: string;
@@ -19,8 +20,10 @@ interface AssistantMessageProps {
   timeline?: TimelineStep[];
   timelineDone?: boolean;
   timelineDurationMs?: number;
+  /** True when the user pressed Stop mid-stream; renders a "Đã dừng" badge. */
+  stopped?: boolean;
   animationDelay?: string;
-  onVote?: (messageId: string, vote: 'up' | 'down') => void;
+  onVote?: (messageId: string, vote: "up" | "down") => void;
 }
 
 export function AssistantMessage({
@@ -32,10 +35,12 @@ export function AssistantMessage({
   timeline,
   timelineDone = false,
   timelineDurationMs,
+  stopped = false,
   animationDelay,
   onVote,
 }: AssistantMessageProps) {
-  const hasBody = typeof body === 'string' ? body.trim().length > 0 : body != null;
+  const hasBody =
+    typeof body === "string" ? body.trim().length > 0 : body != null;
   // Once the timeline has any steps it supersedes the single-line tool status, so we
   // never show two live indicators at once. The status still covers the brief window
   // before the first event arrives.
@@ -52,16 +57,41 @@ export function AssistantMessage({
         >
           auto_awesome
         </span>
-        <span className="font-label-caps text-[11px] tracking-widest opacity-70 uppercase">Response</span>
+        <span className="font-label-caps text-[11px] tracking-widest opacity-70 uppercase">
+          Response
+        </span>
       </div>
       {hasTimeline ? (
-        <AgentTimeline steps={timeline ?? []} done={timelineDone} durationMs={timelineDurationMs} />
+        <>
+          <AgentTimeline
+            steps={timeline ?? []}
+            done={timelineDone}
+            durationMs={timelineDurationMs}
+          />
+          {status !== STATUS_ANSWERING ? (
+            <AssistantToolStatus label={status} />
+          ) : (
+            <></>
+          )}
+        </>
       ) : (
         <AssistantToolStatus label={status} />
       )}
+
       {hasBody ? (
         <div className="bg-surface-container-low border border-border-subtle text-text-ai px-5 py-4 rounded-xl font-body-md leading-relaxed shadow-sm">
-          {typeof body === 'string' ? <Markdown content={body} /> : body}
+          {typeof body === "string" ? <Markdown content={body} /> : body}
+        </div>
+      ) : null}
+      {stopped ? (
+        <div className="flex items-center gap-1.5 text-[12px] ">
+          <span
+            className="material-symbols-outlined text-[14px] bg-error-container text-error rounded-full"
+            aria-hidden
+          >
+            stop_circle
+          </span>
+          <span className="text-[12px] text-red-700">Stopped</span>
         </div>
       ) : null}
       <RelatedLinks items={related} />

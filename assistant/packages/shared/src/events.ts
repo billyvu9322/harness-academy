@@ -29,7 +29,14 @@ export const streamEventSchema = z.discriminatedUnion("type", [
     items: z.array(citationSchema),
   }),
   z.object({ type: z.literal("suggestion"), suggestion: suggestionSchema }),
-  z.object({ type: z.literal("error"), message: z.string() }),
+  z.object({
+    type: z.literal("error"),
+    message: z.string(),
+    /** Machine-readable code so the UI can branch (e.g. show a "New chat" CTA on too_long). */
+    code: z
+      .enum(["too_long", "empty", "injection", "off_topic", "unknown"])
+      .optional(),
+  }),
   z.object({ type: z.literal("done") }),
 ]);
 

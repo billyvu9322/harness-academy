@@ -1,6 +1,11 @@
 import { FormEvent } from "react";
 import { useChatUiStore } from "../../stores/chatUiStore";
 
+/** Hard cap mirrors the server-side per-message guardrail (MAX_INPUT_CHARS = 64000). */
+const HARD_CHAR_LIMIT = 64000;
+/** Soft threshold: show the live counter once the draft passes this length. */
+const SOFT_CHAR_LIMIT = 50000;
+
 interface ChatComposerProps {
   isLoading?: boolean;
   onSubmit: (value: string) => Promise<void> | void;
@@ -12,11 +17,13 @@ export function ChatComposer({
 }: ChatComposerProps) {
   const draft = useChatUiStore((state) => state.draft);
   const setDraft = useChatUiStore((state) => state.setDraft);
+  const overLimit = draft.length > HARD_CHAR_LIMIT;
+  const showCounter = draft.length >= SOFT_CHAR_LIMIT;
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const value = draft.trim();
-    if (!value || isLoading) return;
+    if (!value || isLoading || overLimit) return;
     setDraft("");
     await onSubmit(value);
   }
@@ -38,10 +45,20 @@ export function ChatComposer({
           }
         }}
       />
+      {showCounter ? (
+        <div
+          className={`absolute bottom-4 left-5 text-[11px] font-mono ${
+            overLimit ? 'text-error' : 'text-text-muted'
+          }`}
+        >
+          {draft.length.toLocaleString('vi-VN')} / {HARD_CHAR_LIMIT.toLocaleString('vi-VN')}
+          {overLimit ? ' · quá dài, rút gọn' : null}
+        </div>
+      ) : null}
       <button
         type="submit"
         aria-label="Send"
-        disabled={isLoading || !draft.trim()}
+        disabled={isLoading || !draft.trim() || overLimit}
         className="absolute bottom-4 right-4 text-forge-orange transition-transform active:scale-95 hover:bg-forge-orange/10 p-1 rounded-full disabled:opacity-40 disabled:hover:bg-transparent"
       >
         <span className="material-symbols-outlined text-[28px] font-bold">

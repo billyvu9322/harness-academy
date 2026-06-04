@@ -13,9 +13,13 @@ describe('checkInput', () => {
   });
 
   test('trips on over-length input', () => {
-    const r = checkInput('a'.repeat(4001));
+    const r = checkInput('a'.repeat(64001));
     expect(r.tripwire).toBe(true);
     expect(r.reason).toBe('too_long');
+  });
+
+  test('accepts inputs up to the per-message cap (long history is compacted upstream)', () => {
+    expect(checkInput('a'.repeat(64000)).tripwire).toBe(false);
   });
 
   test('trips on prompt-injection / system-override attempts', () => {

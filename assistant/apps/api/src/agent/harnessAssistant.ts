@@ -40,6 +40,25 @@ export interface RunMessageResult {
   context: AssistantContext;
 }
 
+/** Pluck the latest user message from the SDK agent input (string or AgentInputItem[]). */
+function extractCurrentMessage(input: unknown): string {
+  if (typeof input === "string") return input;
+  if (Array.isArray(input)) {
+    for (let i = input.length - 1; i >= 0; i--) {
+      const item = input[i] as { role?: string; content?: unknown } | undefined;
+      if (item?.role !== "user") continue;
+      const c = item.content;
+      if (typeof c === "string") return c;
+      if (Array.isArray(c)) {
+        return c
+          .map((p: any) => (typeof p === "string" ? p : (p?.text ?? "")))
+          .join("");
+      }
+    }
+  }
+  return "";
+}
+
 export function createAssistant(getIndex: () => DocIndex) {
   const {
     listDocsTool,
@@ -71,8 +90,11 @@ export function createAssistant(getIndex: () => DocIndex) {
       {
         name: "input-policy",
         execute: async ({ input }) => {
-          const text =
-            typeof input === "string" ? input : JSON.stringify(input);
+          // Check only the CURRENT user message, not the stringified history. Stringifying
+          // history+message used to trip `too_long` after a few turns even when the user's
+          // current message was short. History is now compacted upstream (compactIfNeeded)
+          // so it is safe to ignore here.
+          const text = extractCurrentMessage(input);
           const r = checkInput(text);
           return { tripwireTriggered: r.tripwire, outputInfo: r };
         },
