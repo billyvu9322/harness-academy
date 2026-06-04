@@ -22,6 +22,7 @@ services:
       # CORS allowlist (comma-separated). The academy site origin (that embeds the widget) MUST
       # be listed, otherwise the browser blocks the widget's requests.
       WEB_ORIGINS: ${WEB_ORIGINS:?WEB_ORIGINS is required (comma-separated allowed origins)}
+      API_BASE_URL: ${API_BASE_URL:-https://api-harness-academy.nimo.io.vn}
     extra_hosts:
       # Linux: lets host.docker.internal resolve to the VM host IP (where Postgres runs).
       - "host.docker.internal:host-gateway"

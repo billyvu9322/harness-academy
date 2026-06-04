@@ -7,6 +7,65 @@ export type RelevanceLabel = "SAFE" | "OFF_TOPIC" | "INJECTION";
 /** Model used for the cheap pre-answer classification pass. */
 const GUARDRAIL_MODEL = "cx/gpt-5.5";
 
+const SAFE_HINTS = [
+  "harness",
+  "agent",
+  "academy",
+  "workflow",
+  "verification",
+  "prompt",
+  "tool",
+  "orchestrator",
+  "rag",
+  "session",
+  "state",
+  "guardrail",
+  "multi-agent",
+  "ai agent",
+  "llm",
+  "eval",
+  "agents.md",
+  "init.sh",
+] as const;
+
+const OFF_TOPIC_HINTS = [
+  "thời tiết",
+  "nấu",
+  "món ăn",
+  "bóng đá",
+  "tin tức",
+  "giá vàng",
+  "tử vi",
+  "phim",
+  "âm nhạc",
+  "chứng khoán",
+  "weather",
+  "recipe",
+  "football",
+  "news",
+  "movie",
+  "music",
+  "horoscope",
+  "tâm sự"
+] as const;
+
+const INJECTION_HINTS = [
+  "ignore previous",
+  "ignore all previous",
+  "system prompt",
+  "developer message",
+  "reveal prompt",
+  "jailbreak",
+  "bypass",
+  "prompt injection",
+  "bỏ qua hướng dẫn",
+  "bỏ qua mọi hướng dẫn",
+  "tiết lộ system prompt",
+  "lộ prompt",
+  "ghi đè chỉ dẫn",
+  "api key"
+] as const;
+
 // Priority order: a clear safety hit (INJECTION) outranks scope (OFF_TOPIC),
 // which outranks SAFE. The model emits one label, but it may be chatty — we scan.
 const LABELS: RelevanceLabel[] = ["INJECTION", "OFF_TOPIC", "SAFE"];
@@ -43,6 +102,31 @@ export function refusalFor(label: Exclude<RelevanceLabel, "SAFE">): string {
   return "Yêu cầu này bị từ chối vì lý do an toàn.";
 }
 
+function normalizeMessage(message: string): string {
+  return message.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function includesAny(text: string, hints: readonly string[]): boolean {
+  return hints.some((hint) => text.includes(hint));
+}
+
+/**
+ * Fast local classifier for obvious cases. Returns null when the prompt is
+ * ambiguous and worth paying the extra model round-trip.
+ */
+export function classifyInputHeuristically(
+  message: string,
+): RelevanceLabel | null {
+  const text = normalizeMessage(message);
+  if (!text) return "SAFE";
+
+  if (includesAny(text, INJECTION_HINTS)) return "INJECTION";
+  if (includesAny(text, OFF_TOPIC_HINTS)) return "OFF_TOPIC";
+  if (includesAny(text, SAFE_HINTS)) return "SAFE";
+
+  return null;
+}
+
 // Built once (lazily) and reused across requests.
 let guardrailAgent: Agent | null = null;
 function getGuardrailAgent(): Agent {
@@ -62,6 +146,9 @@ function getGuardrailAgent(): Agent {
  * expensive tool loop) on OFF_TOPIC / INJECTION.
  */
 export async function classifyInput(message: string): Promise<RelevanceLabel> {
+  const heuristic = classifyInputHeuristically(message);
+  if (heuristic) return heuristic;
+
   try {
     initLlm();
     const result = await run(getGuardrailAgent(), message);
