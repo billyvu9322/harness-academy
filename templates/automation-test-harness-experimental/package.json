@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@playwright/test": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "@types/node": "latest"
   }
 }

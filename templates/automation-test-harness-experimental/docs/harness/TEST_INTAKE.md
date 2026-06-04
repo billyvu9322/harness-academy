@@ -47,6 +47,14 @@ Proof: scenario approval, data/setup plan, focused test plus affected smoke subs
 - Behavior to verify:
 - Out of scope:
 
+## Data Cases
+> Tester owns input AND expected. Secrets stay in `.env` (reference as `<env>`), never inline.
+> Mark each expected as verified (observed/confirmed) or not. See Test Data Policy in `CONTEXT_RULES.md`.
+
+| Case ID | Input | Expected result | Expected verified? |
+| --- | --- | --- | --- |
+|  |  |  |  |
+
 ## Risk Lane
 - Lane:
 - Risk flags:
