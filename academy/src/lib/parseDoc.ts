@@ -10,6 +10,11 @@ export interface Doc {
 
 // Minimal YAML frontmatter parser (key: value lines only, no nesting).
 export function parseDoc(slug: string, raw: string): Doc {
+  // Normalize CRLF/CR line endings to LF. Without this, a trailing \r on each
+  // frontmatter line breaks the per-line regex (`.` does not match \r, and `$`
+  // without the `m` flag requires true end-of-input), so every value becomes
+  // null and `title` silently falls back to `slug`.
+  raw = raw.replace(/\r\n?/g, '\n')
   const fmMatch = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?/)
   let body = raw
   const meta: Record<string, string> = {}
