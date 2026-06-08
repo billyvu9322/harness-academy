@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Read First
 
 - `AGENTS.md` at repo root is the canonical operating doc for this workspace. Follow it. This file only adds Claude-specific notes and corrections.
-- `AI-Agent-Harness.md` is the primary seminar artifact. Keep it framework-agnostic; do not reintroduce OpenAI Agents SDK code/examples unless the user asks.
+- `docs/AI-Agent-Harness.md` is the primary seminar artifact. Keep it framework-agnostic; do not reintroduce OpenAI Agents SDK code/examples unless the user asks.
 - `docs/OpenAI-Harness-Engineering.md`, `docs/Harness-Template-Flow.md`, `docs/Awesome-Harness-Engineering-Flow.md`, `docs/Viblo-Harness-Engineering.md` are sourced research notes — preserve source URLs and snapshot dates when editing.
 
 ## Repo Shape
@@ -67,7 +67,7 @@ The academy embeds the assistant chat as a self-contained widget — the two sub
 
 ## Content Rules
 
-- Keep `AI-Agent-Harness.md` focused on harness approach/flow/contents, not SDK tutorials.
+- Keep `docs/AI-Agent-Harness.md` focused on harness approach/flow/contents, not SDK tutorials.
 - Feature tracking belongs in `AGENTS.md` / `CLAUDE.md` / `GEMINI.md` — do not create `feature_list.json`.
 - Prefer sourced facts; label inference explicitly when summarizing what a source implies.
 
@@ -78,7 +78,7 @@ The academy embeds the assistant chat as a self-contained widget — the two sub
 
 ## Verification
 
-- After edits to `AI-Agent-Harness.md`, grep for terms that must stay out when runtime-agnostic: `OpenAI|SDK|@openai|agents-js|Sandbox Agent|feature_list`.
+- After edits to `docs/AI-Agent-Harness.md`, grep for terms that must stay out when runtime-agnostic: `OpenAI|SDK|@openai|agents-js|Sandbox Agent|feature_list`.
 - Verify referenced files exist before claiming they do (e.g. no `.pptx` is present in the repo currently).
 
 ## Safety

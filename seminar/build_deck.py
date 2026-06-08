@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Build the seminar deck:
-  "AI Agent Harness: Architecture, Operations & Building Agents with Claude Code"
+  "Harness Engineering​: Building and Operating Reliable AI Agents with Claude Code​"
 
 30-minute talk. Theme mirrors the Harness Academy site:
   brand orange #ED7220, slate text, Inter + JetBrains Mono,
@@ -626,7 +626,7 @@ s = slide(); bg(s, SLATE950)
 rect(s, 0, Inches(6.9), EMU_W, Inches(0.6), ORANGE)
 txt(s, Inches(0.9), Inches(2.2), Inches(11.5), Inches(1.6),
     [[("Thank You — Q&A", 46, WHITE, True, SANS)],
-     [("AI Agent Harness: Architecture, Operations & Building Agents with Claude Code", 17, SLATE200, False, SANS)]],
+     [("Harness Engineering​: Building and Operating Reliable AI Agents with Claude Code​", 17, SLATE200, False, SANS)]],
     line_spacing=1.1, space_after=10)
 txt(s, Inches(0.9), Inches(4.2), Inches(11.5), Inches(0.9),
     [[("“A smart model without a harness is just an intern with root access.”", 19, ORANGE, True, SANS)]],

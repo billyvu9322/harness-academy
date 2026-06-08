@@ -1,4 +1,4 @@
-# AI Agent Harness: Architecture, Operations & Building Agents with Claude Code
+# Harness Engineering​: Building and Operating Reliable AI Agents with Claude Code​
 
 Seminar notes for preparing a talk about AI agent harness engineering, operational patterns, and practical runtime-agnostic harness construction for Claude Code and other coding agents.
 
