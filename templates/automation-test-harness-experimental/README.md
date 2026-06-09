@@ -4,24 +4,29 @@ This sample repository shows how to turn an automation test repo into a Claude C
 
 The harness is built for testers. Claude Code drafts scenarios, generates test code, runs focused checks, diagnoses failures, and writes evidence. Humans approve scenarios, code, and final merge decisions.
 
+## Reusable Blueprint
+
+This README explains how this sample repository works. See [`HARNESS-BLUEPRINT.md`](HARNESS-BLUEPRINT.md) for the reusable automation-test harness blueprint: recommended repo surface, workflow contracts, prompt templates, review gates, evidence format, and adoption guide for applying this pattern to another QA automation repo.
+
 ## What This Sample Demonstrates
 
 - `CLAUDE.md` as the primary Claude Code entrypoint.
 - `AGENTS.md` as a compatibility file imported by `CLAUDE.md` for other agent tools.
 - Project subagents under `.claude/agents/` with Claude Code frontmatter.
 - Project skills under `.claude/skills/` for Playwright and AI automation workflow guidance.
+- Project-scoped Playwright MCP in `.mcp.json` for live browser exploration and locator discovery.
 - Harness control-plane docs under `docs/harness/`.
 - Human-in-the-loop automation workflow from intake to evidence.
 - A sample login testcase generated from an approved test plan.
 - A lightweight `scripts/bin/harness-cli.mjs` for local trace and intake records.
 
-## Architecture From `AI-Agent-Harness.md`
+## Architecture From `docs/AI-Agent-Harness.md`
 
-This sample applies the architecture described in `../../AI-Agent-Harness.md` to the automation testing domain. The original seminar document defines a harness as the system around the model that controls context, tools, environment, state, safety, verification, recovery, and observability. In this sample, those abstract layers become concrete repo files and Claude Code workflows for testers.
+This sample applies the architecture described in `../../docs/AI-Agent-Harness.md` to the automation testing domain. The original seminar document defines a harness as the system around the model that controls context, tools, environment, state, safety, verification, recovery, and observability. In this sample, those abstract layers become concrete repo files and Claude Code workflows for testers.
 
 ### Five-Subsystem Harness Model
 
-`AI-Agent-Harness.md` describes five practical subsystems: instructions, tools, environment, state, and feedback. This repo maps them as follows:
+`docs/AI-Agent-Harness.md` describes five practical subsystems: instructions, tools, environment, state, and feedback. This repo maps them as follows:
 
 | Harness subsystem | Automation test implementation |
 | --- | --- |
@@ -35,7 +40,7 @@ The key adaptation: feedback is not only test pass/fail. For automation testing,
 
 ### Control Plane vs Execution Plane
 
-`AI-Agent-Harness.md` separates trusted orchestration from risky execution. This sample uses the same split:
+`docs/AI-Agent-Harness.md` separates trusted orchestration from risky execution. This sample uses the same split:
 
 | Plane | Files in this sample | Responsibility |
 | --- | --- | --- |
@@ -46,7 +51,7 @@ This prevents Claude Code from treating test generation as a direct code-writing
 
 ### General Harness Flow Adapted For Test Automation
 
-`AI-Agent-Harness.md` defines the general flow:
+`docs/AI-Agent-Harness.md` defines the general flow:
 
 ```text
 Human goal
@@ -79,7 +84,7 @@ The important pattern is contract-before-code. Claude Code should not generate P
 
 ### Multi-Agent Harness Pattern
 
-`AI-Agent-Harness.md` describes planner, generator/builder, evaluator/QA, and reviewer roles. This sample implements those roles as Claude Code project subagents:
+`docs/AI-Agent-Harness.md` describes planner, generator/builder, evaluator/QA, and reviewer roles. This sample implements those roles as Claude Code project subagents:
 
 | Seminar role | Sample subagent | Responsibility |
 | --- | --- | --- |
@@ -93,7 +98,7 @@ Claude Code-specific note: subagents cannot spawn other subagents. That is why o
 
 ### Context Engineering
 
-`AI-Agent-Harness.md` says context should be loaded by phase and risk lane, not maximized. This sample encodes that in `docs/harness/CONTEXT_RULES.md`:
+`docs/AI-Agent-Harness.md` says context should be loaded by phase and risk lane, not maximized. This sample encodes that in `docs/harness/CONTEXT_RULES.md`:
 
 - Intake reads `CLAUDE.md`, `TEST_INTAKE.md`, and the tester request.
 - Planning reads requirement, product docs, similar specs, and relevant existing tests.
@@ -105,7 +110,7 @@ This reduces noisy context and makes Claude Code less likely to edit the wrong f
 
 ### Tool Policy And Safe Autonomy
 
-`AI-Agent-Harness.md` recommends stable tools, least privilege, approval gates, and explicit recovery hints. This sample applies that with:
+`docs/AI-Agent-Harness.md` recommends stable tools, least privilege, approval gates, and explicit recovery hints. This sample applies that with:
 
 - `.claude/settings.json` to allow common Playwright and harness commands while denying secret reads.
 - Subagent `tools:` allowlists so planner is not a shell-heavy implementation agent.
@@ -117,7 +122,7 @@ The goal is controlled acceleration, not full autonomy.
 
 ### Verification And Premature Victory Prevention
 
-`AI-Agent-Harness.md` warns that agents often declare victory too early. This sample counters that with:
+`docs/AI-Agent-Harness.md` warns that agents often declare victory too early. This sample counters that with:
 
 - `docs/harness/TEST_MATRIX.md`: behavior-to-proof mapping.
 - `docs/harness/TRACE_SPEC.md`: required evidence fields.
@@ -129,7 +134,7 @@ For this sample, Playwright tests are intentionally absent so you can verify whe
 
 ### Trace-Driven Reliability Loop
 
-`AI-Agent-Harness.md` treats trace-driven evals as the next maturity step. This sample includes a lightweight durable layer:
+`docs/AI-Agent-Harness.md` treats trace-driven evals as the next maturity step. This sample includes a lightweight durable layer:
 
 - `scripts/bin/harness-cli.mjs intake ...` records intake events.
 - `scripts/bin/harness-cli.mjs trace ...` records execution traces.
@@ -146,31 +151,47 @@ If Claude repeatedly fails in the same way, the fix should improve the harness, 
 ## Quick Start For Testers
 
 1. Open Claude Code in this repository root.
-2. Ask Claude to read `CLAUDE.md` if it has not already loaded.
-3. Start with Planner mode:
+2. Run `/mcp` if Claude Code asks you to approve the project-scoped Playwright MCP server.
+3. Ask Claude to read `CLAUDE.md` if it has not already loaded.
+4. Start with Planner mode:
 
 ```text
 Use the test-planner agent to create a test plan for login with valid credentials.
 ```
 
-4. Review the generated file under `specs/`.
-5. Approve the scenario in chat:
+5. Review the generated file under `specs/`.
+6. Approve the scenario in chat:
 
 ```text
 Approved. Use the test-generator agent to generate the Playwright testcase.
 ```
 
-6. Run focused validation:
+7. Run focused validation:
 
 ```text
 Use the test-healer agent to run the focused test and write the evidence report.
 ```
 
-7. Review scenario, code, and evidence before merging.
+8. Review scenario, code, and evidence before merging.
 
 ## Claude Code Notes
 
 Claude Code reads `CLAUDE.md`, not `AGENTS.md`. This sample keeps `AGENTS.md` for cross-agent compatibility, but `CLAUDE.md` imports it with `@AGENTS.md` and adds Claude-specific instructions.
+
+Playwright MCP is project-scoped through `.mcp.json`, so it is available only when Claude Code is opened from this template repo. The server follows the official Playwright MCP setup:
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
+  }
+}
+```
+
+Use Playwright MCP for exploratory browser work such as navigation, `browser_snapshot`, locator discovery, screenshots, console inspection, and trace/video capture. Keep generated test execution on the normal Playwright CLI commands listed below.
 
 Project subagents live in `.claude/agents/`. Each subagent file uses YAML frontmatter with at least:
 
@@ -193,6 +214,7 @@ Project skills live in `.claude/skills/<skill-name>/SKILL.md`. Invoke them direc
 .
   CLAUDE.md
   AGENTS.md
+  .mcp.json
   .claude/
     agents/
     skills/

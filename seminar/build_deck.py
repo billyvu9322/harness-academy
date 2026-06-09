@@ -8,7 +8,7 @@ Build the seminar deck:
   light content slides, dark slate section dividers + code panels.
 
 On-slide text is ENGLISH; speaker notes (notes()) stay Vietnamese for delivery.
-Content is grounded in the repo (AI-Agent-Harness.md, academy lectures/skills,
+Content is grounded in the repo (docs/AI-Agent-Harness.md, academy lectures/skills,
 assistant/, templates/automation-test-harness-experimental/). Source files are
 cited in slide footnotes.
 
@@ -293,7 +293,7 @@ codebox(s, Inches(8.0), Inches(2.5), Inches(4.6), Inches(3.9), "5-SUBSYSTEM HARN
     "quality = task done",
     "        + trajectory quality",
 ])
-source_note(s, "AI-Agent-Harness.md §2,§4,§8  ·  academy/content/lectures/02-harness-la-gi.md")
+source_note(s, "docs/AI-Agent-Harness.md §2,§4,§8  ·  academy/content/lectures/02-harness-la-gi.md")
 notes(s, "SECTION 1 (2:00–5:00). ĐỊNH NGHĨA: harness engineering = kỷ luật thiết kế/kiểm thử/cải thiện hệ "
           "thống điều khiển quanh LLM. Năm subsystem là khung phân tích: khi agent fail, hỏi tầng nào hỏng — "
           "thiếu context? thiếu tool? environment lệch? mất state? thiếu feedback?  "
@@ -330,7 +330,7 @@ codebox(s, Inches(8.0), Inches(2.5), Inches(4.6), Inches(3.9), "AGENT MEMORY", [
     "",
     "chat = short-term · repo = long-term",
 ])
-source_note(s, "AI-Agent-Harness.md L672  ·  lectures/03,04,05,12  ·  skills/01-skill-anatomy.md")
+source_note(s, "docs/AI-Agent-Harness.md L672  ·  lectures/03,04,05,12  ·  skills/01-skill-anatomy.md")
 notes(s, "SECTION 2 (5:00–8:00). Ba chiến lược: (1) progressive disclosure — 3 lớp: metadata mỗi turn ~50 tok, "
           "full body khi relevant, bundled file on-demand. (2) repo as system of record — plan file + commit + "
           "PR description sống sót qua reset; todo list chỉ giúp session hiện tại. (3) compaction-aware — harness "
@@ -363,7 +363,7 @@ codebox(s, Inches(8.0), Inches(2.5), Inches(4.6), Inches(3.9), "assistant: Harne
     "  ├─ mapStreamEvent → SSE",
     "  └─ buildCitations(context.reads)",
 ])
-source_note(s, "lectures/13,14  ·  assistant/apps/api/src/agent/harnessAssistant.ts  ·  AI-Agent-Harness.md §5.2,§6.4")
+source_note(s, "lectures/13,14  ·  assistant/apps/api/src/agent/harnessAssistant.ts  ·  docs/AI-Agent-Harness.md §5.2,§6.4")
 notes(s, "SECTION 3 (8:00–11:00). Orchestration là lớp control plane quản query loop: quyết input nào hợp lệ, "
           "tool nào chạy song song vs tuần tự, khi nào xin phép, khôi phục lỗi ra sao. PATTERN orchestrator/sub-agent: "
           "orchestrator dispatch Researcher (đọc 50 file → summary 200 từ) + Implementer (code → diff) + Verifier "
@@ -395,7 +395,7 @@ codebox(s, Inches(8.0), Inches(2.5), Inches(4.6), Inches(3.9), "DONE  vs  REALLY
     "──────────────────────────",
     "Done  =  Evidence",
 ])
-source_note(s, "lectures/07,15  ·  assistant/apps/api/src/agent/guardrails.ts  ·  AI-Agent-Harness.md §7.3,§7.4,§9.5")
+source_note(s, "lectures/07,15  ·  assistant/apps/api/src/agent/guardrails.ts  ·  docs/AI-Agent-Harness.md §7.3,§7.4,§9.5")
 notes(s, "SECTION 4 (11:00–14:00). Guardrail = pattern chặn overreach / under-finish / silent error. "
           "Đối phó self-evaluation bias bằng external evaluator hoặc verification skill riêng (agent tự chấm thì "
           "thiên vị). Risk lane intake: Tiny (docs) / Normal (story + approval) / High-risk (auth, data model, "
@@ -632,7 +632,7 @@ txt(s, Inches(0.9), Inches(4.2), Inches(11.5), Inches(0.9),
     [[("“A smart model without a harness is just an intern with root access.”", 19, ORANGE, True, SANS)]],
     line_spacing=1.05)
 txt(s, Inches(0.9), Inches(5.4), Inches(11.5), Inches(1.3),
-    [[("Docs:  AI-Agent-Harness.md  ·  academy/content/  ·  assistant/AGENTS.md", 15, ORANGE, True, MONO)],
+    [[("Docs:  docs/AI-Agent-Harness.md  ·  academy/content/  ·  assistant/AGENTS.md", 15, ORANGE, True, MONO)],
      [("Sample harness:  templates/automation-test-harness-experimental/", 15, SLATE500, False, MONO)]],
     space_after=8)
 notes(s, "Q&A (29:45–30:00+). Dẫn lại Open Issues nếu khán giả im. Để slide tài liệu mở để mọi người chụp.")

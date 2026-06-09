@@ -27,8 +27,8 @@ describe('dedupeCitationsByDoc', () => {
 
   test('dedupes non-routed docs by sourcePath', () => {
     const out = dedupeCitationsByDoc([
-      c('AI-Agent-Harness', undefined, 'AI-Agent-Harness.md', 'A'),
-      c('AI-Agent-Harness', undefined, 'AI-Agent-Harness.md', 'B'),
+      c('AI-Agent-Harness', undefined, 'docs/AI-Agent-Harness.md', 'A'),
+      c('AI-Agent-Harness', undefined, 'docs/AI-Agent-Harness.md', 'B'),
     ]);
     expect(out).toHaveLength(1);
   });

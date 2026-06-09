@@ -5,6 +5,8 @@ tools: Read, Glob, Grep, Write, Edit
 model: sonnet
 permissionMode: default
 color: blue
+mcpServers:
+  - playwright
 skills:
   - ai-automation-test-harness
 ---

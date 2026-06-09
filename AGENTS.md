@@ -3,7 +3,7 @@
 ## Read First
 
 - Root `AGENTS.md` is canonical workspace guide. `CLAUDE.md` adds corrections and subtree notes; use both.
-- Main seminar artifact: `AI-Agent-Harness.md`. Keep it framework-agnostic unless user explicitly asks for vendor-specific material.
+- Main seminar artifact: `docs/AI-Agent-Harness.md`. Keep it framework-agnostic unless user explicitly asks for vendor-specific material.
 - Sourced research notes: `docs/OpenAI-Harness-Engineering.md`, `docs/Harness-Template-Flow.md`, `docs/Awesome-Harness-Engineering-Flow.md`. Preserve source URLs and snapshot dates.
 
 ## Repo Shape
@@ -71,7 +71,7 @@
 
 ## Content And Research Rules
 
-- Do not reintroduce OpenAI Agents SDK examples into `AI-Agent-Harness.md` unless user asks for SDK-specific section.
+- Do not reintroduce OpenAI Agents SDK examples into `docs/AI-Agent-Harness.md` unless user asks for SDK-specific section.
 - Prefer executable/config truth over prose when conflicts appear.
 - Prefer sourced facts over inference; label inference clearly.
 - Keep feature tracking in instruction files if needed; do not create `feature_list.json`.

@@ -30,7 +30,7 @@ beforeAll(() => {
     writeFileSync(full, body);
   };
   write('academy/content/lectures/01-intro.md', LECTURE);
-  write('AI-Agent-Harness.md', '## Tổng quan\n\nKhông có frontmatter.\n');
+  write('docs/AI-Agent-Harness.md', '## Tổng quan\n\nKhông có frontmatter.\n');
 });
 
 afterAll(() => rmSync(root, { recursive: true, force: true }));

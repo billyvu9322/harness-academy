@@ -18,7 +18,7 @@ const corpusDir = path.join(assistantDir, "corpus");
 const DIRS = ["academy/content"];
 // Individual files.
 const FILES = [
-  "AI-Agent-Harness.md",
+  // AI-Agent-Harness.md now lives in docs/ and is synced via TOP_LEVEL_MD_DIRS below.
   "templates/automation-test-harness-experimental/README.md",
   "templates/automation-test-harness-experimental/AGENTS.md",
   "templates/automation-test-harness-experimental/CLAUDE.md",

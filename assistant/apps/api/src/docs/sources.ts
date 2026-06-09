@@ -31,8 +31,7 @@ const SPECS: Spec[] = [
   { kind: 'dir', dir: 'academy/content/projects', contentType: 'project', routeBase: '/projects' },
   { kind: 'dir', dir: 'academy/content/skills', contentType: 'skill', routeBase: '/skills' },
   { kind: 'dir', dir: 'academy/content/references', contentType: 'reference', routeBase: '/references' },
-  { kind: 'file', path: 'AI-Agent-Harness.md', contentType: 'core_doc' },
-  { kind: 'dir', dir: 'docs', contentType: 'core_doc' },
+  { kind: 'dir', dir: 'docs', contentType: 'core_doc' }, // includes docs/AI-Agent-Harness.md (top-level only)
   { kind: 'file', path: 'templates/automation-test-harness-experimental/README.md', contentType: 'template_doc' },
   { kind: 'file', path: 'templates/automation-test-harness-experimental/AGENTS.md', contentType: 'template_doc' },
   { kind: 'file', path: 'templates/automation-test-harness-experimental/CLAUDE.md', contentType: 'template_doc' },

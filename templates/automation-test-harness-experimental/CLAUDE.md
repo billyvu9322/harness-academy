@@ -11,6 +11,7 @@ Claude Code reads this file at session start. Keep this file short, stable, and 
 - Project subagents are defined in `.claude/agents/`.
 - Project skills are defined in `.claude/skills/`.
 - Path-scoped rules are defined in `.claude/rules/`.
+- Project-scoped MCP servers are defined in `.mcp.json`; this template enables Playwright MCP for live browser exploration.
 
 ## Required Workflow
 
@@ -43,6 +44,12 @@ Claude Code discovers project skills from `.claude/skills/`.
 - `playwright-testing`: load for Playwright Test code, locators, fixtures, traces, and repairs.
 
 Subagents preload these skills through their `skills:` frontmatter where relevant.
+
+## Project MCP
+
+- Use Playwright MCP during planning when a live page is available and locators need discovery.
+- Prefer `browser_snapshot` accessibility output over screenshots or guessed selectors.
+- Use `/mcp` in Claude Code to approve or inspect the project-scoped Playwright server.
 
 Important Claude Code behavior:
 

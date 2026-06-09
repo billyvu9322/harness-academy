@@ -20,7 +20,7 @@ beforeAll(() => {
   write('academy/content/skills/s1.md');
   write('academy/content/references/r1.md');
   // core docs
-  write('AI-Agent-Harness.md');
+  write('docs/AI-Agent-Harness.md');
   write('docs/OpenAI-Harness-Engineering.md');
   write('docs/superpowers/plans/should-be-ignored.md'); // nested → excluded
   // template docs

@@ -14,11 +14,11 @@ const ROUTED: DocSection = {
 };
 
 const CORE: DocSection = {
-  docId: 'AI-Agent-Harness.md',
+  docId: 'docs/AI-Agent-Harness.md',
   title: 'AI-Agent-Harness',
   route: undefined,
   contentType: 'core_doc',
-  sourcePath: 'AI-Agent-Harness.md',
+  sourcePath: 'docs/AI-Agent-Harness.md',
   heading: null,
   text: '...',
 };
@@ -36,7 +36,7 @@ describe('toCitation', () => {
     const c = toCitation(CORE);
     expect(c.route).toBeUndefined();
     expect(c.sectionHeading).toBeUndefined();
-    expect(c.sourcePath).toBe('AI-Agent-Harness.md');
+    expect(c.sourcePath).toBe('docs/AI-Agent-Harness.md');
   });
 
   test('output validates against the shared citation schema', () => {

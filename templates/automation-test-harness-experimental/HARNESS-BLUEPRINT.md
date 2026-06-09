@@ -16,6 +16,7 @@ The harness answers these questions before AI writes or changes test code:
 
 - What requirement, user story, bug, or test idea is being automated?
 - What test context should Claude Code read first?
+- Which live browser tool should Claude Code use for locator discovery?
 - Which risk lane applies?
 - Which test scenarios must be reviewed by a human before code generation?
 - Which selectors, fixtures, page objects, and test data are safe to reuse?
@@ -52,6 +53,7 @@ human goal
 flowchart LR
     subgraph CP[Harness Control Plane]
         A1[AGENTS.md]
+        A0[.mcp.json]
         A2[Test intake]
         A3[Context rules]
         A4[Risk lanes]
@@ -86,6 +88,7 @@ Add this surface to an existing automation test repository.
 automation-repo/
   AGENTS.md
   CLAUDE.md                         # optional if the team uses Claude Code conventions
+  .mcp.json                         # project-scoped Playwright MCP server
   README.md
   docs/
     harness/
@@ -123,11 +126,25 @@ automation-repo/
   playwright.config.ts
 ```
 
+Project-scoped Playwright MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
+  }
+}
+```
+
 Minimum viable surface:
 
 ```text
 automation-repo/
   AGENTS.md
+  .mcp.json
   docs/harness/TEST_INTAKE.md
   docs/harness/CONTEXT_RULES.md
   docs/harness/TEST_MATRIX.md

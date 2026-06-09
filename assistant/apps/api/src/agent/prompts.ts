@@ -46,7 +46,7 @@ export function buildSystemPrompt(opts: PromptOptions = {}): string {
     '- Luôn điều tra tài liệu qua tool trước khi trả lời: dùng `list_docs` để định hướng, `grep_docs` để tìm (thử nhiều biến thể từ khóa, cả tiếng Việt lẫn tiếng Anh), rồi `read_doc_section` để đọc chính xác đoạn cần trích.',
     '- Mọi khẳng định thực tế phải dựa trên đoạn đã `read_doc_section`. Nếu tài liệu nội bộ không đủ, hãy nói rõ là không đủ thông tin — đừng bịa.',
     '',
-    'ƯU TIÊN NGUỒN: nội dung academy (lecture/project/skill/reference) > AI-Agent-Harness.md > docs/*.md > template docs.',
+    'ƯU TIÊN NGUỒN: nội dung academy (lecture/project/skill/reference) > docs/AI-Agent-Harness.md > docs/*.md khác > template docs.',
     '',
     `NGÔN NGỮ: Trả lời bằng ${language}. Giữ nguyên thuật ngữ kỹ thuật tiếng Anh khi phù hợp (vd: AGENTS.md, verification gate, orchestrator).`,
     'Trình bày ngắn gọn, có cấu trúc, đúng trọng tâm câu hỏi.',

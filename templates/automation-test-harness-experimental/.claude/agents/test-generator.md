@@ -4,6 +4,7 @@ description: Use proactively after a tester approves a test plan and asks for Pl
 tools: Read, Glob, Grep, Bash, Write, Edit
 model: sonnet
 permissionMode: default
+memory: user
 color: green
 skills:
   - ai-automation-test-harness
