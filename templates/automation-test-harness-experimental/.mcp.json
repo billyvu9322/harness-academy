@@ -2,7 +2,17 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    },
+    "ado": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@azure-devops/mcp",
+        "add-on-products"
+      ]
     }
   }
 }
