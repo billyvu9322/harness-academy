@@ -2,7 +2,7 @@
 name: automation-test-orchestrator
 description: Use as the main Claude Code session agent when a tester wants the full AI-assisted automation flow from intake to scenario plan, code generation, validation, evidence, and review.
 tools: Agent(test-planner, test-generator, test-healer, test-reviewer), Read, Glob, Grep, Bash, Write, Edit
-model: sonnet
+model: opus
 permissionMode: default
 color: purple
 skills:

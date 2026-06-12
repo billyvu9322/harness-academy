@@ -8,3 +8,5 @@ playwright/.auth/
 reports/ai-generated/*.local.md
 .claude/settings.local.json
 .claude/agent-memory-local/
+.playwright-mcp/
+reports/screenshots/

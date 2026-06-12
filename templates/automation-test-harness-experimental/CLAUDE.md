@@ -5,7 +5,7 @@ Claude Code reads this file at session start. Keep this file short, stable, and 
 ## Claude Code Source Of Truth
 
 - `CLAUDE.md` is the primary Claude Code entrypoint.
-- `AGENTS.md` is imported for cross-agent compatibility.
+- `AGENTS.md` is the standalone cross-agent baseline (Codex, Cursor, others); keep it in sync with this file.
 - Project subagents are defined in `.claude/agents/`.
 - Project skills are defined in `.claude/skills/`.
 - Path-scoped rules are defined in `.claude/rules/`.
@@ -18,7 +18,10 @@ For every AI-assisted automation task:
 1. Restate the request as a test work item.
 2. **Resolve external IDs.** A bare numeric ID in a request (e.g. `458232`) is an **Azure DevOps work item ID**. Fetch it via the `ado` MCP (`wit_get_work_item`) and read its **type and fields** from Azure DevOps — do NOT ask the user what the ID is. Use its content as the requirement (see "Azure DevOps work items" below).
 3. Classify the risk lane using `docs/harness/TEST_INTAKE.md`.
-4. Create or update a test plan in `specs/` before writing test code.
+4. Create or update a test plan in `specs/` before writing test code. When the request
+   carries a **URL + user flow**, do live discovery first to capture real locators — the
+   `test-planner` subagent walks the flow with **agent-browser** (primary; Playwright MCP
+   is the fallback) and records stable locators into the plan. See "Live discovery" below.
 5. Stop for human scenario approval unless the lane is Tiny and docs-only.
 6. Generate Playwright code only from an approved scenario.
 7. Run the focused validation command when available.
@@ -55,9 +58,26 @@ Claude Code discovers project skills from `.claude/skills/`.
 
 Subagents preload these skills through their `skills:` frontmatter where relevant.
 
+## Live discovery (locators from a real page)
+
+When planning needs locators off a live page (request carries a URL + user flow):
+
+- **agent-browser is the primary discovery tool**; Playwright MCP is the fallback when the
+  CLI is unavailable. The `test-planner` subagent owns this step (it has `Bash` +
+  the `agent-browser` skill).
+- The CLI is installed in this project's `node_modules`, **not on PATH** — invoke it as
+  `npx agent-browser <command>`. Load mechanics first: `npx agent-browser skills get core`.
+- Walk the flow: `open <url>` → `snapshot -i` at each screen, re-snapshotting after every
+  page change (refs go stale). Record **stable** locators (role+name / label / placeholder /
+  testid), not the ephemeral `@eN` refs — they map 1:1 to Playwright `getByRole/getByLabel/
+  getByPlaceholder/getByTestId`. Put them in the plan's locator strategy.
+- Auth: use agent-browser's auth vault or `state save`; never read `.env`, never put the
+  password on the command line. `agent-browser close` when done.
+
 ## Project MCP
 
-- Use Playwright MCP during planning when a live page is available and locators need discovery.
+- Playwright MCP is the **fallback** discovery tool (see "Live discovery" above) — use it
+  when agent-browser is unavailable.
 - Prefer `browser_snapshot` accessibility output over screenshots or guessed selectors.
 - Use `/mcp` in Claude Code to approve or inspect the project-scoped servers.
 

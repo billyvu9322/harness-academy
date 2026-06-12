@@ -3,7 +3,9 @@
     "playwright": {
       "command": "npx",
       "args": [
-        "@playwright/mcp@latest"
+        "@playwright/mcp@latest",
+        "--output-dir",
+        ".playwright-mcp"
       ]
     },
     "ado": {
@@ -11,8 +13,14 @@
       "args": [
         "-y",
         "@azure-devops/mcp",
-        "add-on-products"
-      ]
+        "add-on-products",
+        "--authentication",
+        "azcli"
+      ],
+      "env": {
+        "ado_mcp_project": "Test Center",
+        "ado_mcp_team": "Test Center Team"
+      }
     }
   }
 }

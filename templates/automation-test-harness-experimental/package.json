@@ -1,18 +1,22 @@
 {
   "name": "automation-test-harness-experimental",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "Sample Claude Code harness for AI-assisted automation testing with Playwright.",
+  "packageManager": "yarn@1.22.22",
+  "description": "Harness template experimental for automation testing with Playwright.",
   "scripts": {
     "test": "playwright test",
     "test:auth": "playwright test tests/auth/login-valid.spec.ts --trace=on",
     "report": "playwright show-report",
     "harness:intake": "node scripts/bin/harness-cli.mjs intake",
-    "harness:trace": "node scripts/bin/harness-cli.mjs trace"
+    "harness:trace": "node scripts/bin/harness-cli.mjs trace",
+    "agent:install": "agent-browser install",
+    "agent:dashboard": "npx agent-browser dashboard start"
   },
   "devDependencies": {
     "@playwright/test": "latest",
+    "@types/node": "latest",
     "typescript": "latest",
-    "@types/node": "latest"
+    "agent-browser": "^0.27.2"
   }
 }

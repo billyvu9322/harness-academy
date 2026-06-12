@@ -80,7 +80,7 @@ the AI implements and verifies.
 ## Claude Code Specifics
 
 - Root `CLAUDE.md` is loaded at session start.
-- `AGENTS.md` is only loaded because `CLAUDE.md` imports it.
+- `AGENTS.md` is the standalone cross-agent baseline; Claude Code does not load it automatically.
 - `.claude/rules/` files can be path-scoped and load when matching files are worked on.
 - Custom subagents start with fresh context and their own prompt; include enough task context when delegating.
 - Built-in Explore and Plan subagents skip `CLAUDE.md`; restate critical constraints if using them for research.
