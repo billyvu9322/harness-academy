@@ -169,6 +169,7 @@ export function RootLayout({ children }: { children: ReactNode }) {
         data-academy-route={location.pathname}
         data-academy-title={currentDocTitle()}
         data-chat-open={shouldOpenChat ? "true" : "false"}
+        data-theme={theme}
       />
     </div>
   );

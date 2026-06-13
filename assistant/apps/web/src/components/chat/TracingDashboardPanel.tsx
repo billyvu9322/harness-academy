@@ -28,9 +28,15 @@ function formatDate(value: string): string {
 function sanitizeDisplayText(value: string): string {
   const redacted = value
     .replace(/sk-[A-Za-z0-9_-]+/g, "sk-[REDACTED]")
-    .replace(/Authorization:\s*Bearer\s+[^\s,;]+/gi, "Authorization: Bearer [REDACTED]")
+    .replace(
+      /Authorization:\s*Bearer\s+[^\s,;]+/gi,
+      "Authorization: Bearer [REDACTED]",
+    )
     .replace(/api\s*key\s*[:=]?\s*[^\s,;]+/gi, "api key [REDACTED]")
-    .replace(/\b(token|secret|password|x-api-key)=([^\s&;,]+)/gi, "$1=[REDACTED]");
+    .replace(
+      /\b(token|secret|password|x-api-key)=([^\s&;,]+)/gi,
+      "$1=[REDACTED]",
+    );
 
   return redacted.length > 500 ? `${redacted.slice(0, 500)}...` : redacted;
 }
@@ -42,18 +48,33 @@ function sumTokens(call: LlmCallTrace): number {
 function getSummary(traces: ChatTrace[]) {
   const llmCalls = traces.flatMap((trace) => trace.llmCalls);
   const totalLatency = traces.reduce((sum, trace) => sum + trace.latencyMs, 0);
-  const averageLatency = traces.length > 0 ? Math.round(totalLatency / traces.length) : 0;
+  const averageLatency =
+    traces.length > 0 ? Math.round(totalLatency / traces.length) : 0;
 
   return {
     traceCount: traces.length,
     llmCallCount: llmCalls.length,
     totalTokens: llmCalls.reduce((sum, call) => sum + sumTokens(call), 0),
-    cachedInputTokens: llmCalls.reduce((sum, call) => sum + (call.cachedInputTokens ?? 0), 0),
+    cachedInputTokens: llmCalls.reduce(
+      (sum, call) => sum + (call.cachedInputTokens ?? 0),
+      0,
+    ),
     averageLatency,
   };
 }
 
-function StatusBadge({ status }: { status: ChatTrace["status"] | LlmCallTrace["status"] }) {
+export function orderTracesByCreatedAtDesc(traces: ChatTrace[]): ChatTrace[] {
+  return [...traces].sort(
+    (left, right) =>
+      new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime(),
+  );
+}
+
+function StatusBadge({
+  status,
+}: {
+  status: ChatTrace["status"] | LlmCallTrace["status"];
+}) {
   const isOk = status === "ok";
   return (
     <span
@@ -69,13 +90,21 @@ function StatusBadge({ status }: { status: ChatTrace["status"] | LlmCallTrace["s
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border-subtle bg-surface-container-low p-3">
-      <div className="text-[11px] font-bold uppercase tracking-wide text-text-muted">{label}</div>
+      <div className="text-[11px] font-bold uppercase tracking-wide text-text-muted">
+        {label}
+      </div>
       <div className="mt-1 text-xl font-bold text-on-surface">{value}</div>
     </div>
   );
 }
 
-function ChipList({ items, emptyLabel }: { items: string[]; emptyLabel: string }) {
+function ChipList({
+  items,
+  emptyLabel,
+}: {
+  items: string[];
+  emptyLabel: string;
+}) {
   if (items.length === 0) {
     return <span className="text-[12px] text-text-muted">{emptyLabel}</span>;
   }
@@ -96,7 +125,9 @@ function ChipList({ items, emptyLabel }: { items: string[]; emptyLabel: string }
 
 function DocsList({ docs }: { docs: string[] }) {
   if (docs.length === 0) {
-    return <span className="text-[12px] text-text-muted">No docs accessed</span>;
+    return (
+      <span className="text-[12px] text-text-muted">No docs accessed</span>
+    );
   }
 
   return (
@@ -114,12 +145,20 @@ function LlmCallCard({ call }: { call: LlmCallTrace }) {
   return (
     <div className="rounded-lg border border-border-subtle bg-surface-container-lowest p-3">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-mono text-[12px] font-bold text-on-surface">{call.endpoint}</span>
-        {call.model ? <span className="text-[12px] text-text-muted">{call.model}</span> : null}
+        <span className="font-mono text-[12px] font-bold text-on-surface">
+          {call.endpoint}
+        </span>
+        {call.model ? (
+          <span className="text-[12px] text-text-muted">{call.model}</span>
+        ) : null}
         <StatusBadge status={call.status} />
-        <span className="text-[12px] text-text-muted">{formatLatency(call.latencyMs)}</span>
+        <span className="text-[12px] text-text-muted">
+          {formatLatency(call.latencyMs)}
+        </span>
         {call.stream !== undefined ? (
-          <span className="text-[12px] text-text-muted">stream: {call.stream ? "yes" : "no"}</span>
+          <span className="text-[12px] text-text-muted">
+            stream: {call.stream ? "yes" : "no"}
+          </span>
         ) : null}
       </div>
 
@@ -131,7 +170,10 @@ function LlmCallCard({ call }: { call: LlmCallTrace }) {
       </div>
 
       {call.requestId ? (
-        <div className="mt-2 truncate font-mono text-[11px] text-text-muted" title={call.requestId}>
+        <div
+          className="mt-2 truncate font-mono text-[11px] text-text-muted"
+          title={call.requestId}
+        >
           requestId {call.requestId}
         </div>
       ) : null}
@@ -150,13 +192,17 @@ function TraceCard({ trace }: { trace: ChatTrace }) {
     <article className="rounded-xl border border-border-subtle bg-surface-container-low p-4 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <div className="font-mono text-[12px] text-text-muted">{formatDate(trace.createdAt)}</div>
+          <div className="font-mono text-[12px] text-text-muted">
+            {formatDate(trace.createdAt)}
+          </div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-text-muted">
             <StatusBadge status={trace.status} />
             <span>{formatLatency(trace.latencyMs)}</span>
             <span>{trace.citationCount} citations</span>
             {trace.regenerated ? (
-              <span className="rounded-full bg-primary-container px-2 py-0.5 text-primary">regenerated</span>
+              <span className="rounded-full bg-primary-container px-2 py-0.5 text-primary">
+                regenerated
+              </span>
             ) : null}
           </div>
         </div>
@@ -170,21 +216,31 @@ function TraceCard({ trace }: { trace: ChatTrace }) {
 
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <div>
-          <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-text-muted">Tool calls</div>
+          <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-text-muted">
+            Tool calls
+          </div>
           <ChipList items={trace.toolCalls} emptyLabel="No tool calls" />
         </div>
         <div>
-          <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-text-muted">Accessed docs</div>
+          <div className="mb-1 text-[11px] font-bold uppercase tracking-wide text-text-muted">
+            Accessed docs
+          </div>
           <DocsList docs={trace.accessedDocs} />
         </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-2">
-        <div className="text-[11px] font-bold uppercase tracking-wide text-text-muted">LLM calls</div>
+        <div className="text-[11px] font-bold uppercase tracking-wide text-text-muted">
+          LLM calls
+        </div>
         {trace.llmCalls.length === 0 ? (
-          <span className="text-[12px] text-text-muted">No LLM calls recorded</span>
+          <span className="text-[12px] text-text-muted">
+            No LLM calls recorded
+          </span>
         ) : (
-          trace.llmCalls.map((call, index) => <LlmCallCard key={`${trace.id}-${index}`} call={call} />)
+          trace.llmCalls.map((call, index) => (
+            <LlmCallCard key={`${trace.id}-${index}`} call={call} />
+          ))
         )}
       </div>
     </article>
@@ -214,7 +270,10 @@ export function TracingDashboardPanel({
   useEffect(() => {
     if (!open) return;
 
-    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    previousFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     closeButtonRef.current?.focus();
 
     return () => {
@@ -274,9 +333,13 @@ export function TracingDashboardPanel({
   if (!open) return null;
 
   const summary = getSummary(traces);
+  const orderedTraces = orderTracesByCreatedAtDesc(traces);
 
   return (
-    <div className="fixed inset-0 z-[70] flex justify-end bg-black/20" role="presentation">
+    <div
+      className="fixed inset-0 z-[70] flex justify-end bg-black/20"
+      role="presentation"
+    >
       <aside
         ref={panelRef}
         role="dialog"
@@ -286,12 +349,19 @@ export function TracingDashboardPanel({
       >
         <header className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
           <div className="flex items-center gap-2 text-on-surface">
-            <span className="material-symbols-outlined text-primary" aria-hidden>
+            <span
+              className="material-symbols-outlined text-primary"
+              aria-hidden
+            >
               monitoring
             </span>
             <div>
-              <h2 className="font-headline-lg text-base font-bold">Tracing dashboard</h2>
-              <p className="text-[12px] text-text-muted">Per-turn observability, no prompt bodies or payloads.</p>
+              <h2 className="font-headline-lg text-base font-bold">
+                Tracing dashboard
+              </h2>
+              <p className="text-[12px] text-text-muted">
+                Per-turn observability, no prompt bodies or payloads.
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -299,7 +369,7 @@ export function TracingDashboardPanel({
               type="button"
               onClick={onRefresh}
               disabled={loading}
-              className="material-symbols-outlined inline-flex h-11 w-11 items-center justify-center rounded-full border-0 bg-transparent p-0 text-text-muted transition-colors hover:text-primary disabled:opacity-40 cursor-pointer"
+              className="material-symbols-outlined inline-flex items-center justify-center rounded-full border-0 bg-transparent p-0 text-text-muted transition-colors hover:text-primary disabled:opacity-40 cursor-pointer"
               aria-label="Refresh traces"
               title="Refresh traces"
             >
@@ -309,7 +379,7 @@ export function TracingDashboardPanel({
               type="button"
               onClick={onClose}
               ref={closeButtonRef}
-              className="material-symbols-outlined inline-flex h-11 w-11 items-center justify-center rounded-full border-0 bg-transparent p-0 text-text-muted transition-colors hover:text-primary cursor-pointer"
+              className="material-symbols-outlined inline-flex items-center justify-center rounded-full border-0 bg-transparent p-0 text-text-muted transition-colors hover:text-primary cursor-pointer"
               aria-label="Close tracing dashboard"
               title="Close"
             >
@@ -321,10 +391,15 @@ export function TracingDashboardPanel({
         <div className="flex-1 overflow-y-auto p-4">
           {error ? (
             <PanelState>
-              <span className="material-symbols-outlined mb-2 text-error" aria-hidden>
+              <span
+                className="material-symbols-outlined mb-2 text-error"
+                aria-hidden
+              >
                 error
               </span>
-              <div className="mb-3 text-error">{sanitizeDisplayText(error)}</div>
+              <div className="mb-3 text-error">
+                {sanitizeDisplayText(error)}
+              </div>
               <button
                 type="button"
                 onClick={onRefresh}
@@ -335,30 +410,54 @@ export function TracingDashboardPanel({
             </PanelState>
           ) : loading ? (
             <PanelState>
-              <span className="material-symbols-outlined mb-2 animate-spin text-primary" aria-hidden>
+              <span
+                className="material-symbols-outlined mb-2 animate-spin text-primary"
+                aria-hidden
+              >
                 progress_activity
               </span>
               Loading traces...
             </PanelState>
           ) : traces.length === 0 ? (
             <PanelState>
-              <span className="material-symbols-outlined mb-2 text-text-muted" aria-hidden>
+              <span
+                className="material-symbols-outlined mb-2 text-text-muted"
+                aria-hidden
+              >
                 query_stats
               </span>
               No traces recorded for this conversation yet.
             </PanelState>
           ) : (
             <div className="flex flex-col gap-4">
-              <section className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5" aria-label="Trace summary">
-                <SummaryCard label="Traces" value={formatNumber(summary.traceCount)} />
-                <SummaryCard label="LLM calls" value={formatNumber(summary.llmCallCount)} />
-                <SummaryCard label="Tokens" value={formatNumber(summary.totalTokens)} />
-                <SummaryCard label="Cached" value={formatNumber(summary.cachedInputTokens)} />
-                <SummaryCard label="Avg latency" value={formatLatency(summary.averageLatency)} />
+              <section
+                className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5"
+                aria-label="Trace summary"
+              >
+                <SummaryCard
+                  label="Traces"
+                  value={formatNumber(summary.traceCount)}
+                />
+                <SummaryCard
+                  label="LLM calls"
+                  value={formatNumber(summary.llmCallCount)}
+                />
+                <SummaryCard
+                  label="Tokens"
+                  value={formatNumber(summary.totalTokens)}
+                />
+                <SummaryCard
+                  label="Cached"
+                  value={formatNumber(summary.cachedInputTokens)}
+                />
+                <SummaryCard
+                  label="Avg latency"
+                  value={formatLatency(summary.averageLatency)}
+                />
               </section>
 
               <section className="flex flex-col gap-3" aria-label="Trace list">
-                {traces.map((trace) => (
+                {orderedTraces.map((trace) => (
                   <TraceCard key={trace.id} trace={trace} />
                 ))}
               </section>

@@ -65,7 +65,7 @@ export function AssistantTopBar({
             aria-label="New chat"
             title="Cuộc trò chuyện mới"
             onClick={onNewChat}
-            className="material-symbols-outlined min-h-10 min-w-10 rounded-full text-text-muted hover:text-primary transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0"
+            className="material-symbols-outlined min-h-1 min-w-1 rounded-full text-text-muted hover:text-primary transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0"
           >
             edit_square
           </button>
@@ -78,7 +78,7 @@ export function AssistantTopBar({
             title="Xem tracing"
             onClick={onToggleTracing}
             disabled={tracingDisabled}
-            className={`material-symbols-outlined min-h-10 min-w-10 rounded-full transition-colors active:opacity-80 border-0 p-0 disabled:cursor-not-allowed disabled:opacity-40 ${
+            className={`material-symbols-outlined min-h-1 min-w-1 rounded-full transition-colors active:opacity-80 border-0 p-0 disabled:cursor-not-allowed disabled:opacity-40 ${
               tracingOpen
                 ? "bg-primary text-on-primary"
                 : "bg-transparent text-text-muted hover:text-primary"
@@ -92,7 +92,7 @@ export function AssistantTopBar({
           aria-label="History"
           aria-expanded={historyOpen}
           onClick={toggleHistory}
-          className={`material-symbols-outlined min-h-10 min-w-10 rounded-full transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0 ${
+          className={`material-symbols-outlined min-h-1 min-w-1 rounded-full transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0 ${
             historyOpen ? "text-primary" : "text-text-muted hover:text-primary"
           }`}
         >
@@ -103,7 +103,7 @@ export function AssistantTopBar({
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="material-symbols-outlined min-h-10 min-w-10 rounded-full text-text-muted hover:text-primary transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0"
+            className="material-symbols-outlined min-h-1 min-w-1 rounded-full text-text-muted hover:text-primary transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0"
           >
             close
           </button>

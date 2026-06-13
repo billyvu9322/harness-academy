@@ -86,6 +86,46 @@ function responseUsage(response: unknown): unknown {
     : undefined;
 }
 
+function isAsyncIterable(value: unknown): value is AsyncIterable<unknown> {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      typeof (value as AsyncIterable<unknown>)[Symbol.asyncIterator] === "function",
+  );
+}
+
+function applyUsage(trace: LlmCallTrace, usage: unknown): void {
+  const summary = extractUsageSummary(usage);
+  if (summary.inputTokens !== undefined) trace.inputTokens = summary.inputTokens;
+  if (summary.outputTokens !== undefined) trace.outputTokens = summary.outputTokens;
+  if (summary.totalTokens !== undefined) trace.totalTokens = summary.totalTokens;
+  if (summary.cachedInputTokens !== undefined) trace.cachedInputTokens = summary.cachedInputTokens;
+}
+
+function wrapUsageStream<T>(stream: AsyncIterable<T>, trace: LlmCallTrace): AsyncIterable<T> {
+  return {
+    async *[Symbol.asyncIterator]() {
+      for await (const chunk of stream) {
+        applyUsage(trace, responseUsage(chunk));
+        yield chunk;
+      }
+    },
+  };
+}
+
+function withStreamUsageOption(request: unknown): unknown {
+  if (!request || typeof request !== "object") return request;
+  const r = request as Record<string, any>;
+  if (r.stream !== true) return request;
+  return {
+    ...r,
+    stream_options: {
+      ...(r.stream_options && typeof r.stream_options === "object" ? r.stream_options : {}),
+      include_usage: true,
+    },
+  };
+}
+
 export function redactSensitiveText(value: string): string {
   return value
     .replace(/(authorization\s*:\s*bearer\s+)([^\s,;]+)/gi, "$1[REDACTED]")
@@ -136,15 +176,19 @@ export function traceLlmCall<T>(
 
   const traced = Promise.resolve(responsePromise).then(
     (response) => {
-      storage.getStore()?.calls.push({
+      const trace: LlmCallTrace = {
         endpoint: args.endpoint,
         model: requestModel(args.request),
         stream: requestStream(args.request),
         status: "ok",
         latencyMs: Date.now() - startedAt,
         requestId: responseRequestId(response),
-        ...extractUsageSummary(responseUsage(response)),
-      });
+      };
+      applyUsage(trace, responseUsage(response));
+      storage.getStore()?.calls.push(trace);
+      if (trace.stream && isAsyncIterable(response)) {
+        return wrapUsageStream(response, trace) as T;
+      }
       return response;
     },
     (error) => {
@@ -171,7 +215,7 @@ export function instrumentOpenAIClient<TClient extends Record<string, any>>(
   if (chatCreate) {
     client.chat.completions.create = (request: unknown, ...rest: unknown[]) =>
       traceLlmCall({ endpoint: "chat.completions", request }, () =>
-        chatCreate(request, ...rest),
+        chatCreate(withStreamUsageOption(request), ...rest),
       );
   }
 

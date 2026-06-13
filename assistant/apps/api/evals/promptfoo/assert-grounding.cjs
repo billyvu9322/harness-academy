@@ -9,27 +9,43 @@ function citationMatches(citation, needle) {
 
 module.exports = (output, context = {}) => {
   const vars = context.vars || {};
+  const testMetadata = context.test?.metadata || {};
   const metadata = context.metadata || context.providerResponse?.metadata || {};
+  const expectedValue = (key, fallback) => {
+    if (vars[key] !== undefined) return vars[key];
+    if (testMetadata[key] !== undefined) return testMetadata[key];
+    if (metadata[key] !== undefined) return metadata[key];
+    return fallback;
+  };
   const citations = Array.isArray(metadata.citations) ? metadata.citations : [];
   const toolCalls = Array.isArray(metadata.toolCalls) ? metadata.toolCalls : [];
-  const keywords = Array.isArray(vars.expectKeywords) ? vars.expectKeywords : [];
-  const minKeywordHits = Number(vars.minKeywordHits ?? Math.min(1, keywords.length));
+  const expectedBehavior = expectedValue('expectedBehavior', 'grounded');
+  const keywords = Array.isArray(expectedValue('expectKeywords', [])) ? expectedValue('expectKeywords', []) : [];
+  const minKeywordHits = Number(expectedValue('minKeywordHits', Math.min(1, keywords.length)));
 
   const keywordHits = keywords.filter((keyword) => textIncludes(output, keyword)).length;
   const keywordPass = keywords.length === 0 || keywordHits >= minKeywordHits;
 
-  const noCitationExpected = vars.expectUncertain === true || vars.expectNoCitation === true;
-  const citationRequired = vars.expectCitation ?? !noCitationExpected;
+  const noCitationExpected =
+    expectedBehavior === 'refusal' ||
+    expectedBehavior === 'uncertain' ||
+    expectedValue('expectUncertain', false) === true ||
+    expectedValue('expectNoCitation', false) === true;
+  const citationRequired =
+    expectedBehavior === 'grounded'
+      ? expectedValue('expectCitation', true)
+      : expectedValue('expectCitation', false);
   const hasCitation = citations.length > 0;
-  const expectedDocCited = vars.expectDocMatch
-    ? citations.some((citation) => citationMatches(citation, vars.expectDocMatch))
+  const expectedDocMatch = expectedValue('expectDocMatch', undefined);
+  const expectedDocCited = expectedDocMatch
+    ? citations.some((citation) => citationMatches(citation, expectedDocMatch))
     : true;
   const citationPass = noCitationExpected
     ? !hasCitation
     : (!citationRequired || hasCitation) && expectedDocCited;
 
-  const expectedTools = Array.isArray(vars.expectedToolNames) ? vars.expectedToolNames : [];
-  const forbiddenTools = Array.isArray(vars.forbiddenToolNames) ? vars.forbiddenToolNames : [];
+  const expectedTools = Array.isArray(expectedValue('expectedToolNames', [])) ? expectedValue('expectedToolNames', []) : [];
+  const forbiddenTools = Array.isArray(expectedValue('forbiddenToolNames', [])) ? expectedValue('forbiddenToolNames', []) : [];
   const toolPass =
     expectedTools.every((name) => toolCalls.includes(name)) &&
     forbiddenTools.every((name) => !toolCalls.includes(name));

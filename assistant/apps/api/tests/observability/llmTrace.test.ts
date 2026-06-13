@@ -126,4 +126,66 @@ describe("llmTrace", () => {
     expect(await traced.asResponse()).toBeInstanceOf(Response);
     await expect(traced).resolves.toEqual({ usage: {} });
   });
+
+  test("updates streaming LLM call usage from the final usage chunk", async () => {
+    const scope = createLlmTraceScope();
+
+    async function* stream() {
+      yield { choices: [{ delta: { content: "hello" } }] };
+      yield {
+        choices: [],
+        usage: {
+          prompt_tokens: 100,
+          completion_tokens: 25,
+          total_tokens: 125,
+          prompt_tokens_details: { cached_tokens: 64 },
+        },
+      };
+    }
+
+    await scope.run(async () => {
+      const traced = await traceLlmCall(
+        { endpoint: "chat.completions", request: { model: "cx/gpt-5.5", stream: true } },
+        async () => stream(),
+      );
+
+      for await (const _chunk of traced) {
+        // consume stream
+      }
+    });
+
+    expect(scope.calls).toHaveLength(1);
+    expect(scope.calls[0]).toMatchObject({
+      endpoint: "chat.completions",
+      stream: true,
+      inputTokens: 100,
+      outputTokens: 25,
+      totalTokens: 125,
+      cachedInputTokens: 64,
+    });
+  });
+
+  test("enables streamed usage reporting without mutating the caller request", async () => {
+    const { instrumentOpenAIClient } = await import("../../src/observability/llmTrace");
+    const originalRequest = { model: "cx/gpt-5.5", stream: true };
+    let receivedRequest: any;
+    const client = instrumentOpenAIClient({
+      chat: {
+        completions: {
+          create: async (request: unknown) => {
+            receivedRequest = request;
+            return { [Symbol.asyncIterator]: async function* () {} };
+          },
+        },
+      },
+    });
+
+    await client.chat.completions.create(originalRequest);
+
+    expect(receivedRequest).toMatchObject({
+      stream: true,
+      stream_options: { include_usage: true },
+    });
+    expect(originalRequest).toEqual({ model: "cx/gpt-5.5", stream: true });
+  });
 });

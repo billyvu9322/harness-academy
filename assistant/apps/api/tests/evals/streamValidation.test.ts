@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StreamEvent } from '@assistant/shared/events';
-import { validateStreamEvents } from '../../src/evals/streamValidation';
+import { validateStreamEvents } from '../../evals/evals/streamValidation';
 
 describe('validateStreamEvents', () => {
   it('passes a valid grounded stream', () => {

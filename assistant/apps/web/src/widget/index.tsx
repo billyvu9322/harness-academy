@@ -34,7 +34,7 @@ class HarnessAssistantElement extends HTMLElement {
   private mountPoint: HTMLDivElement | null = null;
 
   static get observedAttributes(): string[] {
-    return ["data-academy-route", "data-academy-title", "data-chat-open"];
+    return ["data-academy-route", "data-academy-title", "data-chat-open", "data-theme", "theme"];
   }
 
   connectedCallback(): void {
@@ -67,6 +67,10 @@ class HarnessAssistantElement extends HTMLElement {
     if (!this.root) return;
     const config = parseWidgetConfig(this);
     if (config.apiBaseUrl) setApiBaseUrl(config.apiBaseUrl);
+    if (this.mountPoint) {
+      const theme = config.theme ?? "light";
+      this.mountPoint.className = `assistant-theme-${theme} ${theme}`;
+    }
     this.root.render(
       <StrictMode>
         <WidgetApp config={config} />

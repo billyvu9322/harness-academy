@@ -27,6 +27,8 @@ export interface GoldenQuestion {
   expectNoCitation?: boolean;
   /** Out-of-corpus question — a correct answer admits the docs do not cover it (no citation required). */
   expectUncertain?: boolean;
+  /** High-level eval expectation consumed by Promptfoo assertion logic. */
+  expectedBehavior?: 'grounded' | 'refusal' | 'uncertain';
   mode?: 'qa' | 'harness-design';
   transport?: EvalTransport;
   expectedToolNames?: string[];
@@ -52,6 +54,7 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
     language: 'Vietnamese',
     rubric:
       'Phải giải thích feature list là một danh sách tính năng/yêu cầu rõ ràng, đóng vai trò primitive (đơn vị nền tảng) để theo dõi phạm vi công việc và làm cơ sở cho verification. Không bịa khái niệm ngoài tài liệu.',
+    expectedBehavior: 'grounded',
     expectKeywords: ['feature list'],
     expectDocMatch: 'feature-list-la-primitive',
   },
@@ -62,6 +65,7 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
     language: 'Vietnamese',
     rubric:
       'Phải phân biệt verification gate (cổng kiểm chứng bắt buộc để xác nhận một bước/feature hoàn thành) với E2E test (kiểm thử luồng end-to-end). Nêu được vai trò gate trong vòng lặp harness.',
+    expectedBehavior: 'grounded',
     expectKeywords: ['verification gate', 'e2e'],
   },
   {
@@ -71,6 +75,7 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
     language: 'Vietnamese',
     rubric:
       'Phải nêu orchestrator điều phối/giao việc và tổng hợp, còn sub-agent thực thi tác vụ con với context cô lập. Nêu được lý do tách vai trò (quản lý context, song song hóa).',
+    expectedBehavior: 'grounded',
     expectKeywords: ['orchestrator', 'sub-agent'],
     expectDocMatch: 'orchestrator-va-sub-agent',
   },
@@ -81,6 +86,7 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
     language: 'Vietnamese',
     rubric:
       'Phải giải thích clean state giúp tránh nhiễu context cũ, tăng tính tái lập và độ tin cậy của agent giữa các session.',
+    expectedBehavior: 'grounded',
     expectKeywords: ['clean state', 'session'],
     expectDocMatch: 'clean-state',
   },
@@ -91,6 +97,7 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
     language: 'Vietnamese',
     rubric:
       'Phải mô tả vòng lặp định kỳ (heartbeat/query loop) để agent kiểm tra tiến độ, trạng thái và tiếp tục công việc dài hạn mà không mất continuity.',
+    expectedBehavior: 'grounded',
     expectKeywords: ['heartbeat', 'loop'],
     expectDocMatch: 'query-loop-heartbeat',
   },
@@ -100,10 +107,12 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
     question: 'Tỷ giá USD/VND hôm nay là bao nhiêu?',
     language: 'Vietnamese',
     rubric:
-      'Câu hỏi nằm ngoài tài liệu nội bộ. Câu trả lời đúng phải thừa nhận tài liệu không đề cập / không đủ thông tin và KHÔNG được bịa ra một con số tỷ giá.',
-    expectKeywords: ['không'],
+      'Câu hỏi nằm ngoài scope harness engineering của assistant. Câu trả lời đúng là từ chối hỗ trợ câu hỏi ngoài phạm vi, không bịa tỷ giá và không dựng citation.',
+    expectedBehavior: 'refusal',
+    expectKeywords: ['harness engineering', 'hỗ trợ'],
     expectUncertain: true,
     expectNoCitation: true,
+    forbiddenToolNames: ['grep_docs', 'read_doc_section'],
   },
 ];
 

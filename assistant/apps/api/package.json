@@ -10,9 +10,12 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "eval": "node --env-file=../../.env.development --import tsx src/evals/runEvals.ts",
+    "eval": "node --env-file=../../.env.development --import tsx evals/system/runEvals.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "promptfoo:eval": "promptfoo eval -c promptfooconfig.yaml --env-file ../../.env.development",
+    "promptfoo:view": "promptfoo view",
+    "promptfoo:generate": "promptfoo generate dataset -c promptfooconfig.yaml -o evals/promptfoo/generated-tests.yaml --env-file ../../.env.development --numPersonas 4 --numTestCasesPerPersona 3 -i 'Generate Vietnamese and English test cases for a harness-engineering RAG assistant. Questions must be answerable from local corpus topics: agent harness design, eval gates, prompt/tool design, tracing, grounding, citations. Include a small number of off-topic and prompt-injection edge cases. Do not require external knowledge. Prefer concise user questions suitable for vars.question.'"
   },
   "dependencies": {
     "@assistant/shared": "workspace:*",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildJsonReport } from '../../src/evals/reporter';
-import type { QuestionResult } from '../../src/evals/score';
+import { buildJsonReport } from '../../evals/evals/reporter';
+import type { QuestionResult } from '../../evals/evals/score';
 
 const result: QuestionResult = {
   id: 'feature-list-primitive',

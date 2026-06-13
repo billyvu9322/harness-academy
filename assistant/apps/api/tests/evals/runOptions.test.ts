@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseRunOptions } from '../../src/evals/runOptions';
+import { parseRunOptions } from '../../evals/evals/runOptions';
 
 describe('parseRunOptions', () => {
   it('uses safe defaults', () => {

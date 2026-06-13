@@ -14,10 +14,10 @@ import { buildJsonReport, formatResultLine, type EvalAttemptReportInput } from '
 import { parseRunOptions, printUsage, type RunOptions } from './runOptions';
 import { validateStreamEvents } from './streamValidation';
 
-type AssistantRuntime = typeof import('../agent/runtime')['assistant'];
-type RouterClient = typeof import('../agent/llm')['routerClient'];
-type StreamAssistant = typeof import('../agent/streaming')['streamAssistant'];
-type CreateAssistantContext = typeof import('../agent/context')['createAssistantContext'];
+type AssistantRuntime = typeof import('../../src/agent/runtime')['assistant'];
+type RouterClient = typeof import('../../src/agent/llm')['routerClient'];
+type StreamAssistant = typeof import('../../src/agent/streaming')['streamAssistant'];
+type CreateAssistantContext = typeof import('../../src/agent/context')['createAssistantContext'];
 
 async function judgeAnswer(
   q: GoldenQuestion,
@@ -171,11 +171,11 @@ async function main(): Promise<void> {
   if (options.judgeModel) process.env.EVAL_JUDGE_MODEL = options.judgeModel;
 
   const [{ assistant }, { routerClient }, { env }, { streamAssistant }, { createAssistantContext }] = await Promise.all([
-    import('../agent/runtime'),
-    import('../agent/llm'),
-    import('../config/env'),
-    import('../agent/streaming'),
-    import('../agent/context'),
+    import('../../src/agent/runtime'),
+    import('../../src/agent/llm'),
+    import('../../src/config/env'),
+    import('../../src/agent/streaming'),
+    import('../../src/agent/context'),
   ]);
 
   const judgeModel = env.EVAL_JUDGE_MODEL ?? env.OPENAI_CHAT_MODEL;

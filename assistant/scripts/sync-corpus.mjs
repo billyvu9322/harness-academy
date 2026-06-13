@@ -22,7 +22,7 @@ const FILES = [
   "templates/automation-test-harness-experimental/README.md",
   "templates/automation-test-harness-experimental/AGENTS.md",
   "templates/automation-test-harness-experimental/CLAUDE.md",
-  "templates/automation-test-harness-experimental/Template.md",
+  "templates/automation-test-harness-experimental/HARNESS-BLUEPRINT.md",
 ];
 // Directories where only top-level *.md is indexed (sources.ts reads `docs` non-recursively).
 const TOP_LEVEL_MD_DIRS = ["docs"];

@@ -4,6 +4,18 @@ export interface PromptfooTestCase {
   description: string;
   metadata: {
     category: GoldenQuestion['category'];
+    expectedBehavior?: GoldenQuestion['expectedBehavior'];
+    id: GoldenQuestion['id'];
+    language: GoldenQuestion['language'];
+    mode?: GoldenQuestion['mode'];
+    expectKeywords?: GoldenQuestion['expectKeywords'];
+    minKeywordHits?: GoldenQuestion['minKeywordHits'];
+    expectDocMatch?: GoldenQuestion['expectDocMatch'];
+    expectCitation?: GoldenQuestion['expectCitation'];
+    expectNoCitation?: GoldenQuestion['expectNoCitation'];
+    expectUncertain?: GoldenQuestion['expectUncertain'];
+    expectedToolNames?: GoldenQuestion['expectedToolNames'];
+    forbiddenToolNames?: GoldenQuestion['forbiddenToolNames'];
   };
   vars: Record<string, unknown>;
 }
@@ -13,14 +25,10 @@ export function toPromptfooTestCases(questions: GoldenQuestion[]): PromptfooTest
     description: question.id,
     metadata: {
       category: question.category,
-    },
-    vars: {
+      expectedBehavior: question.expectedBehavior,
       id: question.id,
-      category: question.category,
-      question: question.question,
       language: question.language,
       mode: question.mode,
-      transport: question.transport,
       expectKeywords: question.expectKeywords,
       minKeywordHits: question.minKeywordHits,
       expectDocMatch: question.expectDocMatch,
@@ -29,6 +37,9 @@ export function toPromptfooTestCases(questions: GoldenQuestion[]): PromptfooTest
       expectUncertain: question.expectUncertain,
       expectedToolNames: question.expectedToolNames,
       forbiddenToolNames: question.forbiddenToolNames,
+    },
+    vars: {
+      question: question.question,
     },
   }));
 }

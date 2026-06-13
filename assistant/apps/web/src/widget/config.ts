@@ -1,4 +1,6 @@
 /** Configuration the host page passes to the embeddable widget via element attributes. */
+export type WidgetTheme = 'light' | 'dark';
+
 export interface WidgetConfig {
   /** API base URL (academy and the API are different origins). */
   apiBaseUrl?: string;
@@ -8,6 +10,8 @@ export interface WidgetConfig {
   academyTitle?: string;
   /** Host-controlled initial/open signal for the slide-in panel. */
   chatOpen?: boolean;
+  /** Host-controlled visual theme. */
+  theme?: WidgetTheme;
 }
 
 interface AttrSource {
@@ -29,6 +33,10 @@ function firstAttr(source: AttrSource, names: string[]): string | undefined {
   return undefined;
 }
 
+function parseTheme(value: string | undefined): WidgetTheme | undefined {
+  return value === 'light' || value === 'dark' ? value : undefined;
+}
+
 /** Parse the `<harness-assistant>` element's attributes into a WidgetConfig. */
 export function parseWidgetConfig(source: AttrSource): WidgetConfig {
   const config: WidgetConfig = {};
@@ -36,10 +44,12 @@ export function parseWidgetConfig(source: AttrSource): WidgetConfig {
   const academyRoute = firstAttr(source, ['data-academy-route', 'academy-route']);
   const academyTitle = firstAttr(source, ['data-academy-title', 'academy-title']);
   const chatOpen = firstAttr(source, ['data-chat-open', 'chat-open']);
+  const theme = parseTheme(firstAttr(source, ['data-theme', 'theme']));
   if (apiBaseUrl) config.apiBaseUrl = apiBaseUrl;
   if (academyRoute) config.academyRoute = academyRoute;
   if (academyTitle) config.academyTitle = academyTitle;
   if (chatOpen) config.chatOpen = chatOpen === 'true' || chatOpen === '1';
+  if (theme) config.theme = theme;
   return config;
 }
 

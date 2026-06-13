@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { GOLDEN_QUESTIONS } from '../../src/evals/goldenQuestions';
-import { toPromptfooTestCases } from '../../src/evals/promptfooConfig';
+import { GOLDEN_QUESTIONS } from '../../evals/evals/goldenQuestions';
+import { toPromptfooTestCases } from '../../evals/evals/promptfooConfig';
 
 describe('toPromptfooTestCases', () => {
   it('maps golden questions into Promptfoo test vars without duplicating question data', () => {
@@ -11,22 +11,32 @@ describe('toPromptfooTestCases', () => {
       description: GOLDEN_QUESTIONS[0]?.id,
       metadata: {
         category: GOLDEN_QUESTIONS[0]?.category,
+        expectedBehavior: GOLDEN_QUESTIONS[0]?.expectedBehavior,
+        id: GOLDEN_QUESTIONS[0]?.id,
+        language: GOLDEN_QUESTIONS[0]?.language,
+        mode: GOLDEN_QUESTIONS[0]?.mode,
+        expectKeywords: GOLDEN_QUESTIONS[0]?.expectKeywords,
+        minKeywordHits: GOLDEN_QUESTIONS[0]?.minKeywordHits,
+        expectDocMatch: GOLDEN_QUESTIONS[0]?.expectDocMatch,
+        expectCitation: GOLDEN_QUESTIONS[0]?.expectCitation,
+        expectNoCitation: GOLDEN_QUESTIONS[0]?.expectNoCitation,
+        expectUncertain: GOLDEN_QUESTIONS[0]?.expectUncertain,
+        expectedToolNames: GOLDEN_QUESTIONS[0]?.expectedToolNames,
+        forbiddenToolNames: GOLDEN_QUESTIONS[0]?.forbiddenToolNames,
       },
       vars: expect.objectContaining({
-        id: GOLDEN_QUESTIONS[0]?.id,
         question: GOLDEN_QUESTIONS[0]?.question,
-        language: GOLDEN_QUESTIONS[0]?.language,
-        expectKeywords: GOLDEN_QUESTIONS[0]?.expectKeywords,
-        expectDocMatch: GOLDEN_QUESTIONS[0]?.expectDocMatch,
       }),
     });
   });
 
   it('preserves out-of-corpus expectations for grounding assertions', () => {
     const tests = toPromptfooTestCases(GOLDEN_QUESTIONS);
-    const fxRate = tests.find((test) => test.vars.id === 'out-of-corpus-fx-rate');
+    const fxRate = tests.find((test) => test.metadata.id === 'out-of-corpus-fx-rate');
 
-    expect(fxRate?.vars.expectUncertain).toBe(true);
-    expect(fxRate?.vars.expectNoCitation).toBe(true);
+    expect(fxRate?.metadata.expectedBehavior).toBe('refusal');
+    expect(fxRate?.metadata.expectUncertain).toBe(true);
+    expect(fxRate?.metadata.expectNoCitation).toBe(true);
+    expect(fxRate?.metadata.forbiddenToolNames).toEqual(['grep_docs', 'read_doc_section']);
   });
 });

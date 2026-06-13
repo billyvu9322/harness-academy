@@ -10,5 +10,5 @@
     "src/**/*.ts",
     "src/**/*.tsx",
     "vite.config.ts"
-, "tests/lib/sse.test.ts", "tests/lib/citations.test.ts", "tests/lib/agentStatus.test.ts", "tests/widget/config.test.ts", "tests/widget/jsx.d.ts", "tests/features/chat/restore.test.ts"  ]
+, "tests/lib/sse.test.ts", "tests/lib/citations.test.ts", "tests/lib/agentStatus.test.ts", "tests/widget/config.test.ts", "tests/widget/theme.test.ts", "tests/widget/jsx.d.ts", "tests/features/chat/restore.test.ts", "tests/components/chat/TracingDashboardPanel.test.ts"  ]
 }

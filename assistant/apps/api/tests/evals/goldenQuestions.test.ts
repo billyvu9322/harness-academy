@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GOLDEN_QUESTIONS, findGolden } from '../../src/evals/goldenQuestions';
+import { GOLDEN_QUESTIONS, findGolden } from '../../evals/evals/goldenQuestions';
 
 describe('GOLDEN_QUESTIONS', () => {
   it('has a meaningful baseline set', () => {

@@ -13,4 +13,6 @@ defaultTest:
       value: file://evals/promptfoo/assert-grounding.cjs
       metric: grounding
 
-tests: file://evals/promptfoo/tests.ts
+tests:
+  - file://evals/promptfoo/tests.ts
+  - file://evals/promptfoo/generated-tests.ts

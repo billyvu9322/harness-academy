@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildJudgePrompt, parseJudgeVerdict } from '../../src/evals/judge';
+import { buildJudgePrompt, parseJudgeVerdict } from '../../evals/evals/judge';
 
 describe('buildJudgePrompt', () => {
   it('embeds question, rubric, answer and asks for JSON score', () => {

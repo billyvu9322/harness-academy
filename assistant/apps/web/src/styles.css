@@ -2,14 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+:root,
+.assistant-theme-light {
   color-scheme: light;
+  --assistant-background: #f8f9fa;
+  --assistant-surface: #f8f9fa;
+  --assistant-surface-bright: #f8f9fa;
+  --assistant-surface-dim: #d9dadb;
+  --assistant-surface-container-lowest: #ffffff;
+  --assistant-surface-container-low: #f3f4f5;
+  --assistant-surface-container: #edeeef;
+  --assistant-surface-container-high: #e7e8e9;
+  --assistant-surface-container-highest: #e1e3e4;
+  --assistant-on-background: #191c1d;
+  --assistant-on-surface: #191c1d;
+  --assistant-on-surface-variant: #58423d;
+  --assistant-text-muted: #5b5f60;
+  --assistant-text-ai: #191c1d;
+  --assistant-forge-text: #434748;
+  --assistant-forge-label: #58423d;
+  --assistant-outline: #8b716b;
+  --assistant-outline-variant: #dfc0b9;
+  --assistant-forge-border: #dfc0b9;
+  --assistant-border-subtle: #e1e3e4;
+  --assistant-input-bg: #ffffff;
+  --assistant-primary: #d95c41;
+  --assistant-primary-container: #d95c41;
+  --assistant-on-primary: #ffffff;
+  --assistant-on-primary-container: #ffffff;
+  --assistant-panel-light: #f8f9fa;
+  --assistant-error: #ba1a1a;
 }
 
 html,
-html.light {
+html.light,
+.assistant-theme-light {
   background-color: #f8f9fa;
   color: #191c1d;
+  color-scheme: light;
+}
+
+html.dark,
+.assistant-theme-dark {
+  color-scheme: dark;
+  --assistant-background: #020617;
+  --assistant-surface: #0b1220;
+  --assistant-surface-bright: #0f172a;
+  --assistant-surface-dim: #020617;
+  --assistant-surface-container-lowest: #0f172a;
+  --assistant-surface-container-low: #111827;
+  --assistant-surface-container: #1e293b;
+  --assistant-surface-container-high: #334155;
+  --assistant-surface-container-highest: #475569;
+  --assistant-on-background: #f8fafc;
+  --assistant-on-surface: #f8fafc;
+  --assistant-on-surface-variant: #cbd5e1;
+  --assistant-text-muted: #94a3b8;
+  --assistant-text-ai: #f8fafc;
+  --assistant-forge-text: #cbd5e1;
+  --assistant-forge-label: #fdedd7;
+  --assistant-outline: #64748b;
+  --assistant-outline-variant: #334155;
+  --assistant-forge-border: #475569;
+  --assistant-border-subtle: #1e293b;
+  --assistant-input-bg: #0f172a;
+  --assistant-primary: #f19044;
+  --assistant-primary-container: #b84314;
+  --assistant-on-primary: #ffffff;
+  --assistant-on-primary-container: #ffffff;
+  --assistant-panel-light: #020617;
+  --assistant-error: #fca5a5;
+  background-color: #020617;
+  color: #f8fafc;
 }
 
 body {

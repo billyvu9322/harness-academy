@@ -9,6 +9,7 @@ declare module 'react' {
         'data-academy-route'?: string;
         'data-academy-title'?: string;
         'data-chat-open'?: string;
+        'data-theme'?: 'light' | 'dark';
       };
     }
   }
