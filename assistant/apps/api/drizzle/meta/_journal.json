@@ -15,6 +15,13 @@
       "when": 1780296213369,
       "tag": "0001_outstanding_marten_broadcloak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781317861096,
+      "tag": "0002_noisy_nuke",
+      "breakpoints": true
     }
   ]
 }

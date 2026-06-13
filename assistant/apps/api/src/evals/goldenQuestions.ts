@@ -7,24 +7,47 @@
 export interface GoldenQuestion {
   /** Stable, kebab-case id. */
   id: string;
+  category: EvalCategory;
   question: string;
   language: 'Vietnamese' | 'English';
   /** What a correct answer must convey — fed to the LLM-judge. */
   rubric: string;
   /** Keywords expected to appear in a grounded answer (case-insensitive). */
   expectKeywords: string[];
+  /** Minimum keyword hits required for deterministic pass. Defaults to 1 when keywords exist. */
+  minKeywordHits?: number;
   /**
    * Substring expected in at least one citation's sourcePath/route/title.
    * Pins the answer to a specific source doc; omit when several docs are valid.
    */
   expectDocMatch?: string;
+  /** Grounded answers require citations by default; set false only for explicit exceptions. */
+  expectCitation?: boolean;
+  /** Cases that must not fabricate corpus provenance. */
+  expectNoCitation?: boolean;
   /** Out-of-corpus question — a correct answer admits the docs do not cover it (no citation required). */
   expectUncertain?: boolean;
+  mode?: 'qa' | 'harness-design';
+  transport?: EvalTransport;
+  expectedToolNames?: string[];
+  forbiddenToolNames?: string[];
 }
+
+export type EvalCategory =
+  | 'grounded-answer'
+  | 'out-of-corpus'
+  | 'citation-routing'
+  | 'streaming-contract'
+  | 'tool-behavior'
+  | 'prompt-injection'
+  | 'harness-design-mode';
+
+export type EvalTransport = 'message' | 'stream';
 
 export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
   {
     id: 'feature-list-primitive',
+    category: 'citation-routing',
     question: 'Feature list là gì và vì sao nó được coi là một primitive trong harness engineering?',
     language: 'Vietnamese',
     rubric:
@@ -34,6 +57,7 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
   },
   {
     id: 'verification-gate-vs-e2e',
+    category: 'grounded-answer',
     question: 'Verification gate khác gì so với một bài E2E test thông thường?',
     language: 'Vietnamese',
     rubric:
@@ -42,6 +66,7 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
   },
   {
     id: 'orchestrator-vs-subagent',
+    category: 'citation-routing',
     question: 'Vai trò của orchestrator so với sub-agent trong một harness là gì?',
     language: 'Vietnamese',
     rubric:
@@ -51,6 +76,7 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
   },
   {
     id: 'clean-state-per-session',
+    category: 'citation-routing',
     question: 'Tại sao mỗi session nên bắt đầu từ một clean state?',
     language: 'Vietnamese',
     rubric:
@@ -60,6 +86,7 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
   },
   {
     id: 'query-loop-heartbeat',
+    category: 'citation-routing',
     question: 'Query loop / heartbeat trong harness hoạt động như thế nào?',
     language: 'Vietnamese',
     rubric:
@@ -69,12 +96,14 @@ export const GOLDEN_QUESTIONS: GoldenQuestion[] = [
   },
   {
     id: 'out-of-corpus-fx-rate',
+    category: 'out-of-corpus',
     question: 'Tỷ giá USD/VND hôm nay là bao nhiêu?',
     language: 'Vietnamese',
     rubric:
       'Câu hỏi nằm ngoài tài liệu nội bộ. Câu trả lời đúng phải thừa nhận tài liệu không đề cập / không đủ thông tin và KHÔNG được bịa ra một con số tỷ giá.',
     expectKeywords: ['không'],
     expectUncertain: true,
+    expectNoCitation: true,
   },
 ];
 

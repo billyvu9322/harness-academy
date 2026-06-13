@@ -1,5 +1,6 @@
 import type { AssistantContext } from '../agent/context';
 import { buildCitations } from '../docs/citations';
+import { redactSensitiveText, type LlmCallTrace } from './llmTrace';
 
 export interface TraceSummary {
   intent?: string;
@@ -10,6 +11,7 @@ export interface TraceSummary {
   status: 'ok' | 'error';
   errorSummary?: string;
   regenerated: boolean;
+  llmCalls: LlmCallTrace[];
 }
 
 export interface BuildTraceArgs {
@@ -19,6 +21,7 @@ export interface BuildTraceArgs {
   regenerated: boolean;
   intent?: string;
   error?: string;
+  llmCalls?: LlmCallTrace[];
 }
 
 /** Pure: derive a per-turn trace summary from run context + timing. */
@@ -31,7 +34,8 @@ export function buildTraceSummary(args: BuildTraceArgs): TraceSummary {
     citationCount: buildCitations(args.context.reads).length,
     latencyMs: args.latencyMs,
     status: args.status,
-    errorSummary: args.error,
+    errorSummary: args.error ? redactSensitiveText(args.error) : undefined,
     regenerated: args.regenerated,
+    llmCalls: args.llmCalls ?? [],
   };
 }

@@ -69,6 +69,7 @@ const envSchema = z.object({
     .default("postgres://postgres:postgres@localhost:5432/harness_assistant"),
   OPENAI_EMBEDDING_MODEL: z.string().min(1).default("text-embedding-3-small"),
   OPENAI_CHAT_MODEL: z.string().min(1).default("cx/gpt-5.5"),
+  EVAL_JUDGE_MODEL: z.string().min(1).optional(),
   PORT: z.coerce.number().default(3001),
   // Allowed CORS origins (comma-separated) — the standalone web app and/or the academy site
   // that embeds the assistant widget. Defaults to the local dev origins.
@@ -97,6 +98,7 @@ export function parseEnv(
     DATABASE_URL: env.DATABASE_URL,
     OPENAI_EMBEDDING_MODEL: env.OPENAI_EMBEDDING_MODEL,
     OPENAI_CHAT_MODEL: env.OPENAI_CHAT_MODEL,
+    EVAL_JUDGE_MODEL: env.EVAL_JUDGE_MODEL,
     WEB_ORIGINS: env.WEB_ORIGINS,
     API_BASE_URL: appUrl,
   };

@@ -6,6 +6,7 @@
     "./chat": "./src/chat.ts",
     "./events": "./src/events.ts",
     "./citations": "./src/citations.ts",
+    "./traces": "./src/traces.ts",
     "./suggestions": "./src/suggestions.ts"
   },
   "scripts": {

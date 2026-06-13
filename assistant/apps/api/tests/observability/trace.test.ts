@@ -38,4 +38,25 @@ describe('buildTraceSummary', () => {
     expect(t.citationCount).toBe(0);
     expect(t.accessedDocs).toEqual([]);
   });
+
+  test('redacts sensitive values from top-level error summary', () => {
+    const t = buildTraceSummary({
+      context: { reads: [], toolCalls: [] },
+      latencyMs: 10,
+      status: 'error',
+      error:
+        'failed Authorization: Bearer router-secret api key sk-secret token=abc secret=sauce password=hunter2 x-api-key=key123',
+      regenerated: false,
+    });
+
+    expect(t.errorSummary).toBe(
+      'failed Authorization: Bearer [REDACTED] api key [REDACTED] token=[REDACTED] secret=[REDACTED] password=[REDACTED] x-api-key=[REDACTED]',
+    );
+    expect(JSON.stringify(t)).not.toContain('router-secret');
+    expect(JSON.stringify(t)).not.toContain('sk-secret');
+    expect(JSON.stringify(t)).not.toContain('abc');
+    expect(JSON.stringify(t)).not.toContain('sauce');
+    expect(JSON.stringify(t)).not.toContain('hunter2');
+    expect(JSON.stringify(t)).not.toContain('key123');
+  });
 });

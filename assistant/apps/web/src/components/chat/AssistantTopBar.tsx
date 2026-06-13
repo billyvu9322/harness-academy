@@ -7,6 +7,12 @@ interface AssistantTopBarProps {
   onClose?: () => void;
   /** Resets the thread and starts a fresh conversation. Hidden when omitted. */
   onNewChat?: () => void;
+  /** Toggles the tracing panel. Hidden when omitted. */
+  onToggleTracing?: () => void;
+  /** Whether the tracing panel is currently visible. */
+  tracingOpen?: boolean;
+  /** Disables the tracing button while tracing is unavailable. */
+  tracingDisabled?: boolean;
   /** This browser's past conversations, for the history dropdown. */
   history?: ConversationSummary[];
   /** Id of the conversation currently shown, highlighted in the list. */
@@ -22,6 +28,9 @@ interface AssistantTopBarProps {
 export function AssistantTopBar({
   onClose,
   onNewChat,
+  onToggleTracing,
+  tracingOpen = false,
+  tracingDisabled = false,
   history = [],
   activeConversationId = null,
   onSelectConversation,
@@ -49,16 +58,33 @@ export function AssistantTopBar({
         </span>
         <h3 className="font-headline-lg">Assistant</h3>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {onNewChat ? (
           <button
             type="button"
             aria-label="New chat"
             title="Cuộc trò chuyện mới"
             onClick={onNewChat}
-            className="material-symbols-outlined text-text-muted hover:text-primary transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0"
+            className="material-symbols-outlined min-h-10 min-w-10 rounded-full text-text-muted hover:text-primary transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0"
           >
             edit_square
+          </button>
+        ) : null}
+        {onToggleTracing ? (
+          <button
+            type="button"
+            aria-label="Tracing"
+            aria-pressed={tracingOpen}
+            title="Xem tracing"
+            onClick={onToggleTracing}
+            disabled={tracingDisabled}
+            className={`material-symbols-outlined min-h-10 min-w-10 rounded-full transition-colors active:opacity-80 border-0 p-0 disabled:cursor-not-allowed disabled:opacity-40 ${
+              tracingOpen
+                ? "bg-primary text-on-primary"
+                : "bg-transparent text-text-muted hover:text-primary"
+            }`}
+          >
+            account_tree
           </button>
         ) : null}
         <button
@@ -66,7 +92,7 @@ export function AssistantTopBar({
           aria-label="History"
           aria-expanded={historyOpen}
           onClick={toggleHistory}
-          className={`material-symbols-outlined transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0 ${
+          className={`material-symbols-outlined min-h-10 min-w-10 rounded-full transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0 ${
             historyOpen ? "text-primary" : "text-text-muted hover:text-primary"
           }`}
         >
@@ -77,7 +103,7 @@ export function AssistantTopBar({
             type="button"
             aria-label="Close"
             onClick={onClose}
-            className="material-symbols-outlined text-text-muted hover:text-primary transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0"
+            className="material-symbols-outlined min-h-10 min-w-10 rounded-full text-text-muted hover:text-primary transition-colors cursor-pointer active:opacity-80 bg-transparent border-0 p-0"
           >
             close
           </button>

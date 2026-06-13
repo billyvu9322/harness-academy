@@ -4,6 +4,7 @@ import type {
   ConversationSummary,
   FeedbackRequest,
 } from '@assistant/shared/chat';
+import type { ConversationTracesResponse } from '@assistant/shared/traces';
 import { getApiBaseUrl } from '../../lib/runtimeConfig';
 
 export async function postChatMessage(
@@ -42,6 +43,16 @@ export async function getConversationMessages(
     throw new Error(`messages fetch failed (${response.status})`);
   }
   return response.json() as Promise<{ conversationId: string; messages: ChatMessage[] }>;
+}
+
+export async function getConversationTraces(
+  conversationId: string,
+): Promise<ConversationTracesResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/conversations/${conversationId}/traces`);
+  if (!response.ok) {
+    throw new Error(`traces fetch failed (${response.status})`);
+  }
+  return response.json() as Promise<ConversationTracesResponse>;
 }
 
 export async function listConversations(): Promise<{ conversations: ConversationSummary[] }> {

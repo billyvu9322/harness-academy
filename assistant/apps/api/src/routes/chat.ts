@@ -7,6 +7,7 @@ import { streamAssistant } from "../agent/streaming";
 import { compactIfNeeded } from "../agent/compact";
 import { createAssistantContext } from "../agent/context";
 import { buildTraceSummary } from "../observability/trace";
+import { createLlmTraceScope } from "../observability/llmTrace";
 import { serializeSseEvent } from "../rag/placeholder";
 import { isOriginAllowed, parseAllowedOrigins } from "../config/origins";
 import {
@@ -42,16 +43,18 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
     const { message, conversationId: reqId } = parsed.data;
     const conversationId = await resolveConversation(reqId, message);
     const startedAt = Date.now();
+    const llmScope = createLlmTraceScope();
 
     try {
       const rawHistory = await getHistoryTurns(conversationId);
-      // Compact older turns into a summary when the cumulative history grows large —
-      // prevents the agent input from bloating across long sessions.
-      const history = await compactIfNeeded(rawHistory);
-      await appendMessage({ conversationId, role: "user", content: message });
-      const result = await assistant.runMessage(message, {
-        userLanguage: "Vietnamese",
-        history,
+      const result = await llmScope.run(async () => {
+        // Compact older turns inside the trace scope because compaction may call the LLM.
+        const history = await compactIfNeeded(rawHistory);
+        await appendMessage({ conversationId, role: "user", content: message });
+        return assistant.runMessage(message, {
+          userLanguage: "Vietnamese",
+          history,
+        });
       });
       const messageId = await appendMessage({
         conversationId,
@@ -67,6 +70,7 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
           latencyMs: result.latencyMs,
           status: "ok",
           regenerated: result.regenerated,
+          llmCalls: llmScope.calls,
         }),
       });
       return reply.send({
@@ -85,6 +89,7 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
           status: "error",
           regenerated: false,
           error: err instanceof Error ? err.message : "unknown error",
+          llmCalls: llmScope.calls,
         }),
       });
       return reply.code(422).send({
@@ -105,9 +110,9 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
     const { message, conversationId: reqId } = parsed.data;
     const conversationId = await resolveConversation(reqId, message);
     const rawHistory = await getHistoryTurns(conversationId);
-    // Compact older turns into a summary when the cumulative history grows large —
-    // prevents the agent input from bloating across long sessions.
-    const history = await compactIfNeeded(rawHistory);
+    const llmScope = createLlmTraceScope();
+    // Compact older turns inside the trace scope because compaction may call the LLM.
+    const history = await llmScope.run(() => compactIfNeeded(rawHistory));
     await appendMessage({ conversationId, role: "user", content: message });
 
     const context = createAssistantContext({ userLanguage: "Vietnamese" });
@@ -153,21 +158,25 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
     const citations: Citation[] = [];
     const suggestions: Suggestion[] = [];
     try {
-      for await (const ev of streamAssistant(message, {
-        userLanguage: "Vietnamese",
-        history,
-        context,
-        signal: ac.signal,
-      })) {
-        if (ac.signal.aborted) break;
-        if (ev.type === "message.delta") answer += ev.delta;
-        else if (ev.type === "citation") citations.push(ev.citation);
-        else if (ev.type === "suggestion") suggestions.push(ev.suggestion);
-        // Socket may have half-closed between events; writing then throws — guard it.
-        if (!reply.raw.writableEnded) reply.raw.write(serializeSseEvent(ev));
-      }
+      const aborted = await llmScope.run(async () => {
+        for await (const ev of streamAssistant(message, {
+          userLanguage: "Vietnamese",
+          history,
+          context,
+          signal: ac.signal,
+        })) {
+          if (ac.signal.aborted) break;
+          if (ev.type === "message.delta") answer += ev.delta;
+          else if (ev.type === "citation") citations.push(ev.citation);
+          else if (ev.type === "suggestion") suggestions.push(ev.suggestion);
+          // Socket may have half-closed between events; writing then throws — guard it.
+          if (!reply.raw.writableEnded) reply.raw.write(serializeSseEvent(ev));
+        }
 
-      if (ac.signal.aborted) {
+        return ac.signal.aborted;
+      });
+
+      if (aborted) {
         // Persist the partial answer (if any) so reloading the conversation shows what the
         // user saw on screen, with a marker so they know it was cut short.
         if (answer.trim().length > 0) {
@@ -186,6 +195,7 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
             latencyMs: Date.now() - startedAt,
             status: "ok",
             regenerated: false,
+            llmCalls: llmScope.calls,
           }),
         });
         return;
@@ -217,6 +227,7 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
           latencyMs: Date.now() - startedAt,
           status: "ok",
           regenerated: false,
+          llmCalls: llmScope.calls,
         }),
       });
     } catch (err) {
@@ -235,6 +246,7 @@ export const chatRoute: FastifyPluginAsync = async (app) => {
           status: "error",
           regenerated: false,
           error: err instanceof Error ? err.message : "unknown error",
+          llmCalls: llmScope.calls,
         }),
       });
     } finally {

@@ -28,17 +28,6 @@ For every AI-assisted automation task:
 8. Write evidence under `reports/ai-generated/`.
 9. Ask for human final review before claiming ready to merge.
 
-### Azure DevOps work items
-
-When a request names a numeric ID (e.g. "Tạo test case 458232 ... với UI"):
-
-- Call `ado` MCP `wit_get_work_item` with that ID. The **work item type tells you what it is** — don't guess or ask:
-  - **Test Case** → parse the Steps field (`Microsoft.VSTS.TCM.Steps`, HTML/XML) into actions + expected results; that IS the scenario.
-  - **User Story / Bug** → use Description + Acceptance Criteria / repro steps as the requirement; create a Test Case scenario from it.
-  - **Test Plan / Suite** → list contained test cases; ask only WHICH child to automate if more than one.
-- "với UI" / "qua UI" = automate through the browser UI (Playwright), the default for this harness.
-- Only `AskUserQuestion` if the `ado` MCP is unavailable/unauthenticated, the ID is not found, or a genuine fork remains after reading the item (e.g. a Suite with many cases). Reading the item first usually removes the ambiguity.
-
 ## Subagent Orchestration
 
 Use project subagents when the task matches their descriptions:
@@ -57,6 +46,17 @@ Claude Code discovers project skills from `.claude/skills/`.
 - `playwright-testing`: load for Playwright Test code, locators, fixtures, traces, and repairs.
 
 Subagents preload these skills through their `skills:` frontmatter where relevant.
+
+## Browser Automation
+
+Use `agent-browser` for web automation. Run `agent-browser --help` for all commands.
+
+Core workflow:
+
+1. `agent-browser open <url>` - Navigate to page
+2. `agent-browser snapshot -i` - Get interactive elements with refs (@e1, @e2)
+3. `agent-browser click @e1` / `fill @e2 "text"` - Interact using refs
+4. Re-snapshot after page changes
 
 ## Live discovery (locators from a real page)
 
@@ -128,10 +128,8 @@ Consequences for generated code:
 - A new authenticated spec needs no login step; it inherits `user.json`.
 - A test of the login flow itself belongs in the `setup`/unauthenticated path, not the `chromium`
   project (which is pre-authenticated).
-- `setup.skip(!USERNAME || !PASSWORD, ...)` is the documented blocker when `E2E_PASSWORD` is unset
-  — that is the allowed skip, not a workaround.
-- Live target: `BASE_URL` defaults to `https://officeplace-ui-test.aod-team.com`, post-login route
-  is `/root/organizations` (see `auth.setup.ts` assertions).
+- `setup.skip(!USERNAME || !PASSWORD, ...)` is the documented blocker when `E2E_PASSWORD` is unset — that is the allowed skip, not a workaround.
+- Live target: `BASE_URL`, post-login route is `/root/organizations` (see `auth.setup.ts` assertions).
 
 ## Harness CLI
 

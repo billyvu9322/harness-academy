@@ -30,6 +30,7 @@ export const chatTraces = pgTable('chat_traces', {
   intent: text('intent'),
   accessedDocsJson: jsonb('accessed_docs_json').$type<string[]>(),
   toolCallsJson: jsonb('tool_calls_json').$type<string[]>(),
+  llmCallsJson: jsonb('llm_calls_json').$type<unknown[]>(),
   citationCount: integer('citation_count').notNull().default(0),
   latencyMs: integer('latency_ms').notNull().default(0),
   status: text('status').notNull(), // 'ok' | 'error'

@@ -5,19 +5,20 @@ import {
   setTracingDisabled,
 } from '@openai/agents';
 import { env } from '../config/env';
+import { instrumentOpenAIClient } from '../observability/llmTrace';
 
 /**
  * Shared OpenAI-compatible client pointed at the custom router.
  * Reused by every Agent (via the default client) AND by rag/embed.ts,
  * so the base URL + User-Agent header are configured in exactly one place.
  */
-export const routerClient = new OpenAI({
+export const routerClient = instrumentOpenAIClient(new OpenAI({
   baseURL: env.LLM_BASE_URL,
   apiKey: env.LLM_API_KEY,
   defaultHeaders: {
     'User-Agent': 'AssistantHarnessBot/0.1 personal research',
   },
-});
+}));
 
 let initialized = false;
 

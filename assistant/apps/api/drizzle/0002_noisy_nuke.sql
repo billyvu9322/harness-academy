@@ -1,0 +1,1 @@
+ALTER TABLE "chat_traces" ADD COLUMN "llm_calls_json" jsonb;

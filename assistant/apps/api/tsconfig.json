@@ -4,6 +4,6 @@
     "outDir": "dist",
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "drizzle.config.ts"],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "evals/**/*.ts", "drizzle.config.ts"],
   "exclude": ["src/agent/smoke.ts"]
 }

@@ -46,7 +46,7 @@ File references are relative to `assistant/`.
       ▼
 [ docs layer ]  runtime.getIndex → buildDocIndex (allowlist) ; search.grep/read ; keywords expand
       ▼
-[ LLM router ]  agent/llm.ts single OpenAI client → https://9router…/v1 (Chat Completions)
+[ LLM router ]  agent/llm.ts single OpenAI client → API Url (Chat Completions)
 
   cross-cutting:  db/ (Postgres: conversations·messages·chat_traces·user_feedback)
                   observability/trace.ts (per-turn summary)

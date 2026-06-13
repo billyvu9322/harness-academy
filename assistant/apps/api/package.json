@@ -10,7 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "eval": "node --env-file=../../.env --import tsx src/evals/runEvals.ts",
+    "eval": "node --env-file=../../.env.development --import tsx src/evals/runEvals.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },

@@ -2,9 +2,10 @@ import { asc, desc, eq } from 'drizzle-orm';
 import type { Citation } from '@assistant/shared/citations';
 import type { Suggestion } from '@assistant/shared/suggestions';
 import type { ChatMessage, ConversationSummary } from '@assistant/shared/chat';
+import type { ChatTrace } from '@assistant/shared/traces';
 import { db } from './client';
 import { conversations, messages, chatTraces, userFeedback } from './schema';
-import { toConversationSummary, toMessageDto } from './mappers';
+import { toConversationSummary, toMessageDto, toTraceDto } from './mappers';
 import type { HistoryTurn } from '../agent/history';
 import type { TraceSummary } from '../observability/trace';
 
@@ -35,6 +36,15 @@ export async function getMessages(conversationId: string): Promise<ChatMessage[]
     .where(eq(messages.conversationId, conversationId))
     .orderBy(asc(messages.createdAt));
   return rows.map(toMessageDto);
+}
+
+export async function getConversationTraces(conversationId: string): Promise<ChatTrace[]> {
+  const rows = await db
+    .select()
+    .from(chatTraces)
+    .where(eq(chatTraces.conversationId, conversationId))
+    .orderBy(asc(chatTraces.createdAt));
+  return rows.map(toTraceDto);
 }
 
 export async function getHistoryTurns(conversationId: string): Promise<HistoryTurn[]> {
@@ -83,6 +93,7 @@ export async function insertTrace(args: {
     intent: summary.intent ?? null,
     accessedDocsJson: summary.accessedDocs,
     toolCallsJson: summary.toolCalls,
+    llmCallsJson: summary.llmCalls,
     citationCount: summary.citationCount,
     latencyMs: summary.latencyMs,
     status: summary.status,

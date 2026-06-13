@@ -19,6 +19,12 @@ describe('GOLDEN_QUESTIONS', () => {
     }
   });
 
+  it('every question has a category', () => {
+    for (const q of GOLDEN_QUESTIONS) {
+      expect(q.category).toMatch(/^(grounded-answer|out-of-corpus|citation-routing|streaming-contract|tool-behavior|prompt-injection|harness-design-mode)$/);
+    }
+  });
+
   it('grounded (non-uncertain) questions declare expected keywords', () => {
     for (const q of GOLDEN_QUESTIONS) {
       if (!q.expectUncertain) expect(q.expectKeywords.length).toBeGreaterThan(0);
@@ -27,6 +33,13 @@ describe('GOLDEN_QUESTIONS', () => {
 
   it('includes at least one out-of-corpus (uncertain) question', () => {
     expect(GOLDEN_QUESTIONS.some((q) => q.expectUncertain)).toBe(true);
+  });
+
+  it('marks uncertain questions as out-of-corpus cases', () => {
+    for (const q of GOLDEN_QUESTIONS.filter((item) => item.expectUncertain)) {
+      expect(q.category).toBe('out-of-corpus');
+      expect(q.expectNoCitation).toBe(true);
+    }
   });
 
   it('findGolden resolves by id and returns undefined otherwise', () => {

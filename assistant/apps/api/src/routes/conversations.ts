@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { conversationExists, getMessages, listConversations } from '../db/repo';
+import { conversationExists, getConversationTraces, getMessages, listConversations } from '../db/repo';
 
 export const conversationsRoute: FastifyPluginAsync = async (app) => {
   app.get('/api/conversations', async (_request, reply) => {
@@ -14,6 +14,17 @@ export const conversationsRoute: FastifyPluginAsync = async (app) => {
         return reply.code(404).send({ error: 'not_found' });
       }
       return reply.send({ conversationId, messages: await getMessages(conversationId) });
+    },
+  );
+
+  app.get<{ Params: { conversationId: string } }>(
+    '/api/conversations/:conversationId/traces',
+    async (request, reply) => {
+      const { conversationId } = request.params;
+      if (!(await conversationExists(conversationId))) {
+        return reply.code(404).send({ error: 'not_found' });
+      }
+      return reply.send({ conversationId, traces: await getConversationTraces(conversationId) });
     },
   );
 

@@ -1,0 +1,16 @@
+description: Harness Academy Assistant golden evals via Promptfoo
+
+prompts:
+  - '{{question}}'
+
+providers:
+  - id: file://evals/promptfoo/provider.ts
+    label: assistant-runtime
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: file://evals/promptfoo/assert-grounding.cjs
+      metric: grounding
+
+tests: file://evals/promptfoo/tests.ts
